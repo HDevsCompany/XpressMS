@@ -9,83 +9,34 @@
 //                                                       (RUC: manual_razon_social -> direccion -> telefono)
 //        telefono -> correo -> libre (cliente creado)
 //   libre -> agregar_correo -> libre (un cliente que omitió su correo lo agrega después)
+//   libre -> elegir_servicio -> elegir_equipo -> libre (la consulta de servicios vive en flujo_servicios.rs)
+//
+// Los nombres de los pasos están en pasos.rs y las piezas para armar respuestas en respuesta.rs.
 //
 // Regla: este archivo NO escribe SQL. Para leer o guardar datos llama a los repositorios de los
 // módulos comun, acceso y agente.
 
 use sqlx::PgPool;
 
+use super::flujo_servicios;
 use super::modelo::{Campo, Componente, Conversacion, Datos, Verificacion};
 use super::motor::{detectar_intencion, es_afirmativo, es_negativo, normalizar, Intencion};
+use super::pasos::{
+    AGREGAR_CORREO, CONFIRMAR_IDENTIDAD, CONSENTIMIENTO, CORREO, DIRECCION, ELEGIR_EQUIPO,
+    ELEGIR_SERVICIO, LIBRE, MANUAL_MATERNO, MANUAL_NOMBRES, MANUAL_PATERNO, MANUAL_RAZON_SOCIAL,
+    NUMERO_DOCUMENTO, TELEFONO, TIPO_DOCUMENTO, VERIFICAR_TELEFONO,
+};
 use super::repositorio;
+use super::respuesta::{r, Paso, Respuesta, MENU};
 use crate::modulos::acceso::modelo::{ClienteCompleto, NuevoCliente};
 use crate::modulos::acceso::{consulta_documento, repositorio as acceso_repo};
 use crate::modulos::comun::{formato, repositorio as comun_repo, validaciones};
-
-// ---------- Nombres de los pasos (constantes para no equivocarnos al escribirlos) ----------
-const LIBRE: &str = "libre";
-const CONSENTIMIENTO: &str = "consentimiento";
-const TIPO_DOCUMENTO: &str = "tipo_documento";
-const NUMERO_DOCUMENTO: &str = "numero_documento";
-const VERIFICAR_TELEFONO: &str = "verificar_telefono";
-const CONFIRMAR_IDENTIDAD: &str = "confirmar_identidad";
-const MANUAL_NOMBRES: &str = "manual_nombres";
-const MANUAL_PATERNO: &str = "manual_paterno";
-const MANUAL_MATERNO: &str = "manual_materno";
-const MANUAL_RAZON_SOCIAL: &str = "manual_razon_social";
-const DIRECCION: &str = "direccion";
-const TELEFONO: &str = "telefono";
-const CORREO: &str = "correo";
-const AGREGAR_CORREO: &str = "agregar_correo";
 
 // Privacidad: ¿la tarjeta de confirmación muestra los datos de una persona completos?
 // Con "false" (recomendado) la fecha de nacimiento y la dirección salen parcialmente ocultas
 // ("••/••/1995", "•••••• - TRUJILLO"), porque cualquiera que conozca un DNI podría escribirlo en el chat
 // y ver esos datos. Cambia a "true" solo si el negocio lo decide de forma consciente.
 const MOSTRAR_DATOS_COMPLETOS: bool = false;
-
-// Botones del menú principal (por ahora son respuestas de prueba; se conectarán a Servicio Técnico).
-const MENU: [&str; 2] = ["Ver servicios", "Agendar una cita"];
-
-// ---------- Tipos de ayuda ----------
-
-// Lo que el agente responde: un texto y, opcionalmente, botones rápidos, un elemento visual especial
-// (casilla de términos, tarjeta de datos) y un aviso de espera para el próximo mensaje.
-pub struct Respuesta {
-    pub texto: String,
-    pub opciones: Vec<String>,
-    pub componente: Option<Componente>,
-    // Si tiene valor, el navegador mostrará ese texto con una animación ("Consultando tus datos…")
-    // mientras procesa el SIGUIENTE mensaje de la persona (porque sabemos que será lento).
-    pub espera: Option<String>,
-}
-
-impl Respuesta {
-    // Agrega un elemento visual especial a la respuesta.
-    fn con_componente(mut self, componente: Componente) -> Self {
-        self.componente = Some(componente);
-        self
-    }
-
-    // Agrega el aviso de espera para el próximo mensaje.
-    fn con_espera(mut self, texto: &str) -> Self {
-        self.espera = Some(texto.to_string());
-        self
-    }
-}
-
-// Cada paso devuelve: la respuesta + el nombre del paso en el que queda la conversación.
-type Paso = (Respuesta, &'static str);
-
-// Atajo para armar una Respuesta a partir de textos fijos.
-fn r(texto: &str, opciones: &[&str]) -> Respuesta {
-    Respuesta {
-        texto: texto.to_string(),
-        opciones: opciones.iter().map(|o| o.to_string()).collect(),
-        componente: None,
-        espera: None,
-    }
-}
 
 // ---------- Punto de entrada ----------
 
@@ -127,7 +78,9 @@ pub async fn responder(
         CONSENTIMIENTO => paso_consentimiento(pool, &mut datos, texto, accion).await?,
         TIPO_DOCUMENTO => paso_tipo_documento(pool, &mut datos, texto).await?,
         NUMERO_DOCUMENTO => paso_numero_documento(pool, &mut datos, texto).await?,
-        VERIFICAR_TELEFONO => paso_verificar_telefono(pool, conversacion, &mut datos, texto).await?,
+        VERIFICAR_TELEFONO => {
+            paso_verificar_telefono(pool, conversacion, &mut datos, texto).await?
+        }
         CONFIRMAR_IDENTIDAD => paso_confirmar_identidad(pool, &mut datos, texto).await?,
         MANUAL_NOMBRES => paso_manual_nombres(&mut datos, texto),
         MANUAL_PATERNO => paso_manual_paterno(&mut datos, texto),
@@ -137,6 +90,8 @@ pub async fn responder(
         TELEFONO => paso_telefono(&mut datos, texto),
         CORREO => paso_correo(pool, conversacion, &mut datos, texto).await?,
         AGREGAR_CORREO => paso_agregar_correo(pool, conversacion, texto).await?,
+        ELEGIR_SERVICIO => flujo_servicios::paso_elegir_servicio(pool, &mut datos, texto).await?,
+        ELEGIR_EQUIPO => flujo_servicios::paso_elegir_equipo(pool, &mut datos, texto).await?,
         _ => paso_libre(pool, conversacion, texto).await?,
     };
 
@@ -147,22 +102,59 @@ pub async fn responder(
 // ---------- Conversación libre ----------
 
 // La persona pregunta lo que quiera. Si pide registrarse, empieza el registro.
-async fn paso_libre(pool: &PgPool, conversacion: &Conversacion, texto: &str) -> Result<Paso, sqlx::Error> {
+async fn paso_libre(
+    pool: &PgPool,
+    conversacion: &Conversacion,
+    texto: &str,
+) -> Result<Paso, sqlx::Error> {
     let paso = match detectar_intencion(texto) {
         Intencion::Registrarse => {
             if conversacion.cliente.is_some() {
-                (r("¡Ya estás registrado, gracias! ¿En qué te puedo ayudar?", &MENU), LIBRE)
+                (
+                    r(
+                        "¡Ya estás registrado, gracias! ¿En qué te puedo ayudar?",
+                        &MENU,
+                    ),
+                    LIBRE,
+                )
             } else {
                 (pedir_consentimiento(), CONSENTIMIENTO)
             }
         }
         Intencion::AgregarCorreo => return pedir_correo_adicional(pool, conversacion).await,
-        Intencion::Saludo => (r("¡Hola! ¿En qué te puedo ayudar con el servicio técnico?", &MENU), LIBRE),
-        Intencion::SoloDePaso => (r("¡Sin problema! Pregúntame lo que quieras sobre nuestros servicios.", &MENU), LIBRE),
-        Intencion::Servicios => (r("Con gusto te cuento sobre nuestros servicios. (La lista real la conectaremos a la base de datos.)", &["Agendar una cita"]), LIBRE),
-        Intencion::AgendarCita => (r("Claro, vamos a agendar tu cita. (El agendamiento lo construimos más adelante.)", &[]), LIBRE),
-        Intencion::Despedida => (r("¡Gracias a ti! Aquí estaré si necesitas algo más. 😊", &[]), LIBRE),
-        Intencion::Desconocida => (r("Mmm, no estoy seguro de haber entendido. ¿Puedes decirlo de otra forma?", &MENU), LIBRE),
+        Intencion::Saludo => (
+            r(
+                "¡Hola! ¿En qué te puedo ayudar con el servicio técnico?",
+                &MENU,
+            ),
+            LIBRE,
+        ),
+        Intencion::SoloDePaso => (
+            r(
+                "¡Sin problema! Pregúntame lo que quieras sobre nuestros servicios.",
+                &MENU,
+            ),
+            LIBRE,
+        ),
+        Intencion::Servicios => return flujo_servicios::mostrar_lista(pool).await,
+        Intencion::AgendarCita => (
+            r(
+                "Claro, vamos a agendar tu cita. (El agendamiento lo construimos más adelante.)",
+                &[],
+            ),
+            LIBRE,
+        ),
+        Intencion::Despedida => (
+            r("¡Gracias a ti! Aquí estaré si necesitas algo más. 😊", &[]),
+            LIBRE,
+        ),
+        Intencion::Desconocida => (
+            r(
+                "Mmm, no estoy seguro de haber entendido. ¿Puedes decirlo de otra forma?",
+                &MENU,
+            ),
+            LIBRE,
+        ),
     };
     Ok(paso)
 }
@@ -171,7 +163,10 @@ async fn paso_libre(pool: &PgPool, conversacion: &Conversacion, texto: &str) -> 
 
 // La persona pidió agregar su correo (por ejemplo, porque pulsó «Omitir» al registrarse).
 // Solo se permite si ya es cliente y todavía NO tiene un correo guardado.
-async fn pedir_correo_adicional(pool: &PgPool, conversacion: &Conversacion) -> Result<Paso, sqlx::Error> {
+async fn pedir_correo_adicional(
+    pool: &PgPool,
+    conversacion: &Conversacion,
+) -> Result<Paso, sqlx::Error> {
     let Some(codigo) = conversacion.cliente.as_deref() else {
         return Ok((
             r("Para guardar tu correo primero necesito registrarte. ¿Quieres que lo hagamos ahora?", &["Quiero registrarme", "Solo estoy de paso"]),
@@ -179,7 +174,10 @@ async fn pedir_correo_adicional(pool: &PgPool, conversacion: &Conversacion) -> R
         ));
     };
 
-    let correo_actual = acceso_repo::obtener_cliente(pool, codigo).await?.and_then(|c| c.correo).filter(|c| !c.is_empty());
+    let correo_actual = acceso_repo::obtener_cliente(pool, codigo)
+        .await?
+        .and_then(|c| c.correo)
+        .filter(|c| !c.is_empty());
     match correo_actual {
         // Ya tiene uno: no lo cambiamos desde el chat (se mostraría solo enmascarado).
         Some(correo) => {
@@ -189,13 +187,26 @@ async fn pedir_correo_adicional(pool: &PgPool, conversacion: &Conversacion) -> R
             );
             Ok((r(&mensaje, &MENU), LIBRE))
         }
-        None => Ok((r("Claro. ¿Cuál es tu correo electrónico?", &["Cancelar"]), AGREGAR_CORREO)),
+        None => Ok((
+            r("Claro. ¿Cuál es tu correo electrónico?", &["Cancelar"]),
+            AGREGAR_CORREO,
+        )),
     }
 }
 
-async fn paso_agregar_correo(pool: &PgPool, conversacion: &Conversacion, texto: &str) -> Result<Paso, sqlx::Error> {
+async fn paso_agregar_correo(
+    pool: &PgPool,
+    conversacion: &Conversacion,
+    texto: &str,
+) -> Result<Paso, sqlx::Error> {
     let Some(codigo) = conversacion.cliente.as_deref() else {
-        return Ok((r("No encontré tu registro. ¿Quieres registrarte?", &["Quiero registrarme"]), LIBRE));
+        return Ok((
+            r(
+                "No encontré tu registro. ¿Quieres registrarte?",
+                &["Quiero registrarme"],
+            ),
+            LIBRE,
+        ));
     };
 
     if validaciones::correo_valido(texto) {
@@ -207,12 +218,14 @@ async fn paso_agregar_correo(pool: &PgPool, conversacion: &Conversacion, texto: 
         let respuesta = match acceso_repo::obtener_cliente(pool, codigo).await? {
             Some(cliente) => {
                 let datos = datos_de_cliente(&cliente);
-                r("¡Listo! Guardé tu correo. Así quedó tu credencial:", &MENU).con_componente(credencial(
-                    &cliente.tipo_documento,
-                    &cliente.numero_documento,
-                    &datos,
-                    Some(codigo),
-                ))
+                r("¡Listo! Guardé tu correo. Así quedó tu credencial:", &MENU).con_componente(
+                    credencial(
+                        &cliente.tipo_documento,
+                        &cliente.numero_documento,
+                        &datos,
+                        Some(codigo),
+                    ),
+                )
             }
             None => r("¡Listo! Guardé tu correo.", &MENU),
         };
@@ -220,7 +233,13 @@ async fn paso_agregar_correo(pool: &PgPool, conversacion: &Conversacion, texto: 
     } else if normalizar(texto).trim() == "cancelar" || es_negativo(texto) {
         Ok((r("Sin problema, lo dejamos así. Cuando quieras puedes agregarlo. ¿En qué más te puedo ayudar?", &MENU), LIBRE))
     } else {
-        Ok((r("Ese correo no parece válido. Escríbelo de nuevo o pulsa «Cancelar».", &["Cancelar"]), AGREGAR_CORREO))
+        Ok((
+            r(
+                "Ese correo no parece válido. Escríbelo de nuevo o pulsa «Cancelar».",
+                &["Cancelar"],
+            ),
+            AGREGAR_CORREO,
+        ))
     }
 }
 
@@ -269,7 +288,10 @@ async fn paso_consentimiento(
         }
         // Pulsó "No, gracias": no guardamos nada y puede seguir consultando.
         Some("rechazar_terminos") => Ok((
-            r("Entendido, no guardaré ningún dato. Puedes seguir preguntándome lo que quieras.", &MENU),
+            r(
+                "Entendido, no guardaré ningún dato. Puedes seguir preguntándome lo que quieras.",
+                &MENU,
+            ),
             LIBRE,
         )),
         // Escribió algo en lugar de usar la tarjeta.
@@ -294,17 +316,29 @@ async fn paso_consentimiento(
 async fn pedir_tipo_documento(pool: &PgPool) -> Result<Paso, sqlx::Error> {
     let tipos = comun_repo::listar_tipos_documento(pool).await?;
     let nombres: Vec<&str> = tipos.iter().map(|t| t.nombre.as_str()).collect();
-    Ok((r("¡Gracias! ¿Con qué documento quieres registrarte?", &nombres), TIPO_DOCUMENTO))
+    Ok((
+        r(
+            "¡Gracias! ¿Con qué documento quieres registrarte?",
+            &nombres,
+        ),
+        TIPO_DOCUMENTO,
+    ))
 }
 
-async fn paso_tipo_documento(pool: &PgPool, datos: &mut Datos, texto: &str) -> Result<Paso, sqlx::Error> {
+async fn paso_tipo_documento(
+    pool: &PgPool,
+    datos: &mut Datos,
+    texto: &str,
+) -> Result<Paso, sqlx::Error> {
     let tipos = comun_repo::listar_tipos_documento(pool).await?;
     let entrada = normalizar(texto);
 
     // Acepta el código ("1"), el nombre exacto ("dni") o parte del nombre ("carnet").
     let elegido = tipos.iter().find(|tipo| {
         let nombre = normalizar(&tipo.nombre);
-        entrada == tipo.codigo || entrada == nombre || (entrada.len() >= 3 && nombre.contains(&entrada))
+        entrada == tipo.codigo
+            || entrada == nombre
+            || (entrada.len() >= 3 && nombre.contains(&entrada))
     });
 
     match elegido {
@@ -320,12 +354,22 @@ async fn paso_tipo_documento(pool: &PgPool, datos: &mut Datos, texto: &str) -> R
         }
         None => {
             let nombres: Vec<&str> = tipos.iter().map(|t| t.nombre.as_str()).collect();
-            Ok((r("No reconocí ese documento. Elige una de las opciones:", &nombres), TIPO_DOCUMENTO))
+            Ok((
+                r(
+                    "No reconocí ese documento. Elige una de las opciones:",
+                    &nombres,
+                ),
+                TIPO_DOCUMENTO,
+            ))
         }
     }
 }
 
-async fn paso_numero_documento(pool: &PgPool, datos: &mut Datos, texto: &str) -> Result<Paso, sqlx::Error> {
+async fn paso_numero_documento(
+    pool: &PgPool,
+    datos: &mut Datos,
+    texto: &str,
+) -> Result<Paso, sqlx::Error> {
     let tipo = datos.tipo_documento.clone().unwrap_or_default();
 
     // 1. Revisamos que el número tenga el formato correcto para ese tipo de documento.
@@ -336,7 +380,8 @@ async fn paso_numero_documento(pool: &PgPool, datos: &mut Datos, texto: &str) ->
     datos.numero_documento = Some(numero.clone());
 
     // 2. ¿Ya está registrado? Por seguridad NO mostramos sus datos: pedimos una verificación sencilla.
-    if let Some(existente) = acceso_repo::buscar_cliente_por_documento(pool, &tipo, &numero).await? {
+    if let Some(existente) = acceso_repo::buscar_cliente_por_documento(pool, &tipo, &numero).await?
+    {
         datos.cliente_existente = Some(existente.codigo);
         datos.intentos = 0;
         return Ok((
@@ -352,7 +397,10 @@ async fn paso_numero_documento(pool: &PgPool, datos: &mut Datos, texto: &str) ->
     // 3. Intentamos obtener los datos automáticamente (solo DNI y RUC).
     if let Some(persona) = consulta_documento::consultar(&tipo, &numero).await {
         let tiene_nombres = persona.nombres.as_deref().map_or(false, |n| !n.is_empty());
-        let tiene_razon_social = persona.razon_social.as_deref().map_or(false, |n| !n.is_empty());
+        let tiene_razon_social = persona
+            .razon_social
+            .as_deref()
+            .map_or(false, |n| !n.is_empty());
 
         // Solo seguimos por aquí si la consulta trajo un nombre o una razón social.
         if tiene_nombres || tiene_razon_social {
@@ -400,7 +448,11 @@ fn credencial(tipo: &str, numero: &str, datos: &Datos, codigo: Option<&str>) -> 
     };
     let texto_de = |valor: &Option<String>| valor.clone().unwrap_or_default();
     let direccion = datos.direccion.as_deref().filter(|d| !d.is_empty());
-    let estado = if codigo.is_some() { "Activo" } else { "Pendiente de confirmar" };
+    let estado = if codigo.is_some() {
+        "Activo"
+    } else {
+        "Pendiente de confirmar"
+    };
 
     if tipo == validaciones::TIPO_RUC {
         // Una empresa: sus datos de RUC son públicos, se muestran completos.
@@ -430,11 +482,19 @@ fn credencial(tipo: &str, numero: &str, datos: &Datos, codigo: Option<&str>) -> 
             campos.push(campo("Sexo", formato::nombre_sexo(sexo).to_string()));
         }
         if let Some(fecha) = datos.fecha_nacimiento.as_deref() {
-            let valor = if MOSTRAR_DATOS_COMPLETOS { formato::formatear_fecha(fecha) } else { formato::fecha_enmascarada(fecha) };
+            let valor = if MOSTRAR_DATOS_COMPLETOS {
+                formato::formatear_fecha(fecha)
+            } else {
+                formato::fecha_enmascarada(fecha)
+            };
             campos.push(campo("Nacimiento", valor));
         }
         if let Some(direccion) = direccion {
-            let valor = if MOSTRAR_DATOS_COMPLETOS { direccion.to_string() } else { formato::direccion_enmascarada(direccion) };
+            let valor = if MOSTRAR_DATOS_COMPLETOS {
+                direccion.to_string()
+            } else {
+                formato::direccion_enmascarada(direccion)
+            };
             campos.push(campo("Dirección", formato::a_titulo(&valor)));
         }
         agregar_contacto(&mut campos, datos, codigo.is_some());
@@ -482,13 +542,21 @@ async fn paso_verificar_telefono(
 ) -> Result<Paso, sqlx::Error> {
     let digitos: String = texto.chars().filter(|c| c.is_ascii_digit()).collect();
     let codigo_cliente = datos.cliente_existente.clone().unwrap_or_default();
-    let telefono = acceso_repo::obtener_telefono(pool, &codigo_cliente).await?.unwrap_or_default();
+    let telefono = acceso_repo::obtener_telefono(pool, &codigo_cliente)
+        .await?
+        .unwrap_or_default();
 
     if digitos.len() == 3 && telefono.ends_with(&digitos) {
         // Coinciden: es él. Vinculamos esta conversación a su cliente (sin mostrar ningún dato).
         repositorio::vincular_cliente(pool, &conversacion.codigo, &codigo_cliente, None).await?;
         *datos = Datos::default();
-        Ok((r("¡Perfecto, te reconozco! Bienvenido de vuelta. ¿En qué te puedo ayudar?", &MENU), LIBRE))
+        Ok((
+            r(
+                "¡Perfecto, te reconozco! Bienvenido de vuelta. ¿En qué te puedo ayudar?",
+                &MENU,
+            ),
+            LIBRE,
+        ))
     } else {
         datos.intentos += 1;
         if datos.intentos >= 3 {
@@ -510,7 +578,11 @@ async fn paso_verificar_telefono(
 
 // ---------- Registro: confirmación de identidad ----------
 
-async fn paso_confirmar_identidad(pool: &PgPool, datos: &mut Datos, texto: &str) -> Result<Paso, sqlx::Error> {
+async fn paso_confirmar_identidad(
+    pool: &PgPool,
+    datos: &mut Datos,
+    texto: &str,
+) -> Result<Paso, sqlx::Error> {
     if es_negativo(texto) {
         // No es él: borramos lo obtenido (conservamos solo el consentimiento) y volvemos a preguntar el documento.
         *datos = Datos {
@@ -521,13 +593,22 @@ async fn paso_confirmar_identidad(pool: &PgPool, datos: &mut Datos, texto: &str)
     } else if es_afirmativo(texto) {
         Ok(siguiente_tras_identidad(datos))
     } else {
-        Ok((r("¿Me confirmas si esos datos son correctos? Responde sí o no.", &["Sí, son correctos", "No, no soy yo"]), CONFIRMAR_IDENTIDAD))
+        Ok((
+            r(
+                "¿Me confirmas si esos datos son correctos? Responde sí o no.",
+                &["Sí, son correctos", "No, no soy yo"],
+            ),
+            CONFIRMAR_IDENTIDAD,
+        ))
     }
 }
 
 // Después de confirmar la identidad: pedimos la dirección solo si la consulta no la trajo.
 fn siguiente_tras_identidad(datos: &Datos) -> Paso {
-    let falta_direccion = datos.direccion.as_deref().map_or(true, |d| d.trim().is_empty());
+    let falta_direccion = datos
+        .direccion
+        .as_deref()
+        .map_or(true, |d| d.trim().is_empty());
     if falta_direccion {
         (r("¿Cuál es tu dirección?", &[]), DIRECCION)
     } else {
@@ -543,7 +624,10 @@ fn paso_manual_nombres(datos: &mut Datos, texto: &str) -> Paso {
             datos.nombres = Some(nombres);
             (r("¿Y tu apellido paterno?", &[]), MANUAL_PATERNO)
         }
-        None => (r("Escribe tus nombres usando solo letras, por favor.", &[]), MANUAL_NOMBRES),
+        None => (
+            r("Escribe tus nombres usando solo letras, por favor.", &[]),
+            MANUAL_NOMBRES,
+        ),
     }
 }
 
@@ -551,9 +635,21 @@ fn paso_manual_paterno(datos: &mut Datos, texto: &str) -> Paso {
     match validaciones::limpiar_nombre(texto) {
         Some(paterno) => {
             datos.paterno = Some(paterno);
-            (r("¿Y tu apellido materno? Si no tienes, escribe «no tengo».", &["No tengo"]), MANUAL_MATERNO)
+            (
+                r(
+                    "¿Y tu apellido materno? Si no tienes, escribe «no tengo».",
+                    &["No tengo"],
+                ),
+                MANUAL_MATERNO,
+            )
         }
-        None => (r("Escribe tu apellido paterno usando solo letras, por favor.", &[]), MANUAL_PATERNO),
+        None => (
+            r(
+                "Escribe tu apellido paterno usando solo letras, por favor.",
+                &[],
+            ),
+            MANUAL_PATERNO,
+        ),
     }
 }
 
@@ -563,7 +659,13 @@ fn paso_manual_materno(datos: &mut Datos, texto: &str) -> Paso {
     } else if let Some(materno) = validaciones::limpiar_nombre(texto) {
         datos.materno = Some(materno);
     } else {
-        return (r("Escribe tu apellido materno usando solo letras, o pulsa «No tengo».", &["No tengo"]), MANUAL_MATERNO);
+        return (
+            r(
+                "Escribe tu apellido materno usando solo letras, o pulsa «No tengo».",
+                &["No tengo"],
+            ),
+            MANUAL_MATERNO,
+        );
     }
     (r("¿Cuál es tu dirección?", &[]), DIRECCION)
 }
@@ -571,7 +673,13 @@ fn paso_manual_materno(datos: &mut Datos, texto: &str) -> Paso {
 fn paso_manual_razon_social(datos: &mut Datos, texto: &str) -> Paso {
     let razon = texto.split_whitespace().collect::<Vec<_>>().join(" "); // quita espacios repetidos
     if razon.chars().count() < 3 || razon.chars().count() > 200 {
-        return (r("Escribe la razón social completa (entre 3 y 200 caracteres).", &[]), MANUAL_RAZON_SOCIAL);
+        return (
+            r(
+                "Escribe la razón social completa (entre 3 y 200 caracteres).",
+                &[],
+            ),
+            MANUAL_RAZON_SOCIAL,
+        );
     }
     datos.razon_social = Some(razon.to_uppercase());
     (r("¿Cuál es la dirección de la empresa?", &[]), DIRECCION)
@@ -583,14 +691,26 @@ fn paso_direccion(datos: &mut Datos, texto: &str) -> Paso {
     let direccion = texto.split_whitespace().collect::<Vec<_>>().join(" ");
     let largo = direccion.chars().count();
     if !(5..=120).contains(&largo) {
-        return (r("Escribe una dirección de entre 5 y 120 caracteres, por favor.", &[]), DIRECCION);
+        return (
+            r(
+                "Escribe una dirección de entre 5 y 120 caracteres, por favor.",
+                &[],
+            ),
+            DIRECCION,
+        );
     }
     datos.direccion = Some(direccion.to_uppercase());
     pedir_telefono()
 }
 
 fn pedir_telefono() -> Paso {
-    (r("¿Cuál es tu número de celular? Lo usaremos para coordinar tus citas.", &[]), TELEFONO)
+    (
+        r(
+            "¿Cuál es tu número de celular? Lo usaremos para coordinar tus citas.",
+            &[],
+        ),
+        TELEFONO,
+    )
 }
 
 fn paso_telefono(datos: &mut Datos, texto: &str) -> Paso {
@@ -619,7 +739,13 @@ async fn paso_correo(
     } else if validaciones::correo_valido(texto) {
         datos.correo = Some(texto.trim().to_lowercase());
     } else {
-        return Ok((r("Ese correo no parece válido. Escríbelo de nuevo o pulsa «Omitir».", &["Omitir"]), CORREO));
+        return Ok((
+            r(
+                "Ese correo no parece válido. Escríbelo de nuevo o pulsa «Omitir».",
+                &["Omitir"],
+            ),
+            CORREO,
+        ));
     }
 
     finalizar_registro(pool, conversacion, datos).await
@@ -628,7 +754,11 @@ async fn paso_correo(
 // ---------- Registro: guardar al cliente ----------
 
 // Con todos los datos recogidos, crea el cliente en Acceso.Clientes y vincula la conversación.
-async fn finalizar_registro(pool: &PgPool, conversacion: &Conversacion, datos: &mut Datos) -> Result<Paso, sqlx::Error> {
+async fn finalizar_registro(
+    pool: &PgPool,
+    conversacion: &Conversacion,
+    datos: &mut Datos,
+) -> Result<Paso, sqlx::Error> {
     let nuevo = NuevoCliente {
         tipo_documento: datos.tipo_documento.clone().unwrap_or_default(),
         numero_documento: datos.numero_documento.clone().unwrap_or_default(),
@@ -648,7 +778,11 @@ async fn finalizar_registro(pool: &PgPool, conversacion: &Conversacion, datos: &
     repositorio::vincular_cliente(pool, &conversacion.codigo, &codigo, Some("registro")).await?;
 
     // Nombre para saludar: el primer nombre, o la razón social si es una empresa.
-    let nombre = match datos.nombres.as_deref().and_then(|n| n.split_whitespace().next()) {
+    let nombre = match datos
+        .nombres
+        .as_deref()
+        .and_then(|n| n.split_whitespace().next())
+    {
         Some(primer_nombre) => formato::a_titulo(primer_nombre),
         None => datos.razon_social.clone().unwrap_or_default(),
     };

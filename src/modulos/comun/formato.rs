@@ -15,7 +15,9 @@ pub fn formatear_fecha(iso: &str) -> String {
 // sin exponer su fecha de nacimiento completa.
 pub fn fecha_enmascarada(iso: &str) -> String {
     match iso.split('-').next() {
-        Some(anio) if anio.len() == 4 && anio.chars().all(|c| c.is_ascii_digit()) => format!("••/••/{}", anio),
+        Some(anio) if anio.len() == 4 && anio.chars().all(|c| c.is_ascii_digit()) => {
+            format!("••/••/{}", anio)
+        }
         _ => "••/••/••••".to_string(),
     }
 }
@@ -37,7 +39,9 @@ pub fn a_titulo(texto: &str) -> String {
         .map(|palabra| {
             let mut letras = palabra.chars();
             match letras.next() {
-                Some(primera) => primera.to_uppercase().collect::<String>() + &letras.as_str().to_lowercase(),
+                Some(primera) => {
+                    primera.to_uppercase().collect::<String>() + &letras.as_str().to_lowercase()
+                }
                 None => String::new(),
             }
         })
@@ -57,7 +61,12 @@ pub fn nombre_sexo(codigo: &str) -> &'static str {
 // "915054365" -> "+51 915 054 365". Si no son 9 dígitos, lo devuelve tal cual.
 pub fn formatear_telefono(telefono: &str) -> String {
     if telefono.len() == 9 && telefono.chars().all(|c| c.is_ascii_digit()) {
-        format!("+51 {} {} {}", &telefono[0..3], &telefono[3..6], &telefono[6..9])
+        format!(
+            "+51 {} {} {}",
+            &telefono[0..3],
+            &telefono[3..6],
+            &telefono[6..9]
+        )
     } else {
         telefono.to_string()
     }
@@ -71,6 +80,14 @@ pub fn correo_enmascarado(correo: &str) -> String {
             format!("{}•••@{}", inicial, dominio)
         }
         None => "•••".to_string(),
+    }
+}
+
+// El precio base de un servicio, listo para mostrar: Some("60.00") -> "Desde S/ 60.00"; None -> "A cotizar".
+pub fn precio_base(precio: Option<&str>) -> String {
+    match precio {
+        Some(valor) => format!("Desde S/ {}", valor),
+        None => "A cotizar".to_string(),
     }
 }
 
@@ -88,15 +105,24 @@ mod pruebas {
 
     #[test]
     fn direcciones() {
-        assert_eq!(direccion_enmascarada("AV. ESPAÑA 123 - TRUJILLO"), "•••••• - TRUJILLO");
-        assert_eq!(direccion_enmascarada("JR. LIMA 45 - URB. SOL - LA ESPERANZA"), "•••••• - LA ESPERANZA");
+        assert_eq!(
+            direccion_enmascarada("AV. ESPAÑA 123 - TRUJILLO"),
+            "•••••• - TRUJILLO"
+        );
+        assert_eq!(
+            direccion_enmascarada("JR. LIMA 45 - URB. SOL - LA ESPERANZA"),
+            "•••••• - LA ESPERANZA"
+        );
         assert_eq!(direccion_enmascarada("AV. ESPAÑA 123"), "••••••");
     }
 
     #[test]
     fn titulo() {
         assert_eq!(a_titulo("JUAN CARLOS  PEREZ"), "Juan Carlos Perez");
-        assert_eq!(a_titulo("AV. ESPAÑA 123 - TRUJILLO"), "Av. España 123 - Trujillo");
+        assert_eq!(
+            a_titulo("AV. ESPAÑA 123 - TRUJILLO"),
+            "Av. España 123 - Trujillo"
+        );
         assert_eq!(a_titulo("•••••• - TRUJILLO"), "•••••• - Trujillo");
         assert_eq!(a_titulo(""), "");
     }
@@ -118,5 +144,11 @@ mod pruebas {
     fn correo() {
         assert_eq!(correo_enmascarado("juan.perez@gmail.com"), "j•••@gmail.com");
         assert_eq!(correo_enmascarado("raro"), "•••");
+    }
+
+    #[test]
+    fn precios() {
+        assert_eq!(precio_base(Some("60.00")), "Desde S/ 60.00");
+        assert_eq!(precio_base(None), "A cotizar");
     }
 }

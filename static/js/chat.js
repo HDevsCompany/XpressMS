@@ -7,6 +7,7 @@ import { agregarBurbuja, limpiarOpciones, mostrarOpciones } from './burbujas.js'
 import { mostrarCargando } from './componentes/cargando.js';
 import { mostrarConsentimiento } from './componentes/consentimiento.js';
 import { mostrarTarjetaDatos } from './componentes/tarjeta_datos.js';
+import { mostrarTarjetaServicio } from './componentes/tarjeta_servicio.js';
 import { pausa } from './dom.js';
 
 const formulario = document.getElementById('formulario');
@@ -39,6 +40,8 @@ function mostrarComponente(componente) {
     });
   } else if (componente.tipo === 'identidad') {
     mostrarTarjetaDatos(componente);
+  } else if (componente.tipo === 'servicio') {
+    mostrarTarjetaServicio(componente);
   }
 }
 
