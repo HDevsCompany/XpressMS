@@ -9,7 +9,7 @@
 
 use sqlx::PgPool;
 
-use super::modelo::{Conversacion, MensajeGuardado};
+use super::modelo::{Conversacion, Datos, MensajeGuardado};
 use crate::modulos::comun::codigos::{generar_codigo, generar_token};
 
 // Crea una conversación nueva con código y token generados por el backend.
@@ -28,13 +28,16 @@ pub async fn crear_conversacion(pool: &PgPool) -> Result<Conversacion, sqlx::Err
         codigo,
         token,
         paso: "inicio".to_string(),
+        cliente: None,
+        datos: "{}".to_string(),
     })
 }
 
 // Busca una conversación activa por su token. Devuelve "None" si no existe.
 pub async fn buscar_por_token(pool: &PgPool, token: &str) -> Result<Option<Conversacion>, sqlx::Error> {
     sqlx::query_as::<_, Conversacion>(
-        "select ConversacionesCodigo as codigo, ConversacionesToken as token, ConversacionesPaso as paso \
+        "select ConversacionesCodigo as codigo, ConversacionesToken as token, ConversacionesPaso as paso, \
+                ConversacionesCliente as cliente, ConversacionesDatos::text as datos \
          from Agente.Conversaciones \
          where ConversacionesToken = $1 and ConversacionesEstado = 'A'",
     )
@@ -82,4 +85,51 @@ pub async fn listar_mensajes(pool: &PgPool, conversacion: &str) -> Result<Vec<Me
     .bind(conversacion)
     .fetch_all(pool) // todas las filas, en un Vec
     .await
+}
+
+// Guarda en qué paso va la conversación y lo que se ha recogido hasta ahora.
+// "serde_json::to_string" convierte la estructura Datos en texto JSON; "$2::text::jsonb" lo convierte
+// a JSON dentro de la base de datos.
+pub async fn guardar_estado(
+    pool: &PgPool,
+    conversacion: &str,
+    paso: &str,
+    datos: &Datos,
+) -> Result<(), sqlx::Error> {
+    let json = serde_json::to_string(datos).unwrap_or_else(|_| "{}".to_string());
+
+    sqlx::query(
+        "update Agente.Conversaciones \
+         set ConversacionesPaso = $1, ConversacionesDatos = $2::text::jsonb, ConversacionesFechaActividad = now() \
+         where ConversacionesCodigo = $3",
+    )
+    .bind(paso)
+    .bind(json)
+    .bind(conversacion)
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
+// Asocia la conversación con un cliente (porque se registró o porque verificó su identidad).
+// "resultado" es opcional: al registrarse se marca 'registro'; si solo se identifica, se deja como está.
+pub async fn vincular_cliente(
+    pool: &PgPool,
+    conversacion: &str,
+    cliente: &str,
+    resultado: Option<&str>,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "update Agente.Conversaciones \
+         set ConversacionesCliente = $1, ConversacionesResultado = coalesce($2::text, ConversacionesResultado) \
+         where ConversacionesCodigo = $3",
+    )
+    .bind(cliente)
+    .bind(resultado)
+    .bind(conversacion)
+    .execute(pool)
+    .await?;
+
+    Ok(())
 }

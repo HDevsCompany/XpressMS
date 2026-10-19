@@ -1,157 +1,39 @@
 <!DOCTYPE html>
 <!-- Página principal de XpressMS: aquí vive el chat con el agente. -->
+<!-- Los estilos están en static/css y los scripts en static/js: esta página solo arma la estructura. -->
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <!-- Hace que la página se vea bien en celulares -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>XpressMS · Servicio técnico</title>
-  <style>
-    /* Colores en un solo lugar: si quieres cambiar el estilo, empieza por aquí. */
-    :root { --azul: #1d4ed8; --azul-claro: #dbeafe; --fondo: #f1f5f9; --texto: #0f172a; --gris: #64748b; }
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: system-ui, "Segoe UI", sans-serif; background: var(--fondo); color: var(--texto);
-           display: flex; justify-content: center; }
-    /* La "tarjeta" del chat ocupa toda la altura de la pantalla */
-    .chat { width: 100%; max-width: 640px; height: 100vh; display: flex; flex-direction: column; background: #fff;
-            box-shadow: 0 0 24px rgba(15, 23, 42, .08); }
-    header { background: var(--azul); color: #fff; padding: 14px 18px; }
-    header h1 { margin: 0; font-size: 1.05rem; }
-    header p { margin: 2px 0 0; font-size: .8rem; opacity: .85; }
-    /* Zona donde aparecen los mensajes; hace scroll cuando se llena */
-    #mensajes { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-    .burbuja { max-width: 82%; padding: 10px 14px; border-radius: 16px; line-height: 1.4; white-space: pre-wrap; }
-    .agente  { background: var(--azul-claro); align-self: flex-start; border-bottom-left-radius: 4px; }
-    .persona { background: var(--azul); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
-    /* Botones rápidos que sugiere el agente */
-    .opciones { display: flex; flex-wrap: wrap; gap: 8px; align-self: flex-start; }
-    .opciones button { border: 1px solid var(--azul); background: #fff; color: var(--azul); border-radius: 999px;
-                       padding: 6px 14px; cursor: pointer; font-size: .9rem; }
-    .opciones button:hover { background: var(--azul-claro); }
-    /* Barra inferior para escribir */
-    form { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #e2e8f0; }
-    input { flex: 1; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 999px; font-size: 1rem; }
-    form button { background: var(--azul); color: #fff; border: 0; border-radius: 999px; padding: 0 20px; cursor: pointer; font-size: 1rem; }
-  </style>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/chat.css">
+  <link rel="stylesheet" href="/static/css/componentes.css">
+  <link rel="stylesheet" href="/static/css/carnet.css">
 </head>
 <body>
   <main class="chat">
-    <header>
-      <h1>H&amp;Devs · Servicio técnico</h1>
-      <p>Asistente virtual</p>
+    <header class="chat-cabecera">
+      <div>
+        <h1>H&amp;Devs · Servicio técnico</h1>
+        <p>Asistente virtual</p>
+      </div>
+      <!-- Olvida la conversación actual y empieza una nueva (útil para probar el registro otra vez). -->
+      <button id="nueva-conversacion" class="boton-cabecera" type="button">Nueva conversación</button>
     </header>
 
-    <!-- Aquí el JavaScript va agregando las burbujas -->
-    <div id="mensajes"></div>
+    <!-- Aquí los scripts van agregando burbujas, tarjetas y botones. "aria-live" avisa a los lectores de pantalla. -->
+    <div id="mensajes" aria-live="polite"></div>
 
     <!-- Formulario para escribir. "autocomplete=off" evita sugerencias del navegador. -->
-    <form id="formulario" autocomplete="off">
+    <form id="formulario" class="chat-formulario" autocomplete="off">
       <input id="texto" type="text" placeholder="Escribe tu mensaje..." required>
       <button type="submit">Enviar</button>
     </form>
   </main>
 
-  <script>
-    // Guardamos referencias a las piezas de la página que vamos a usar.
-    const zonaMensajes = document.getElementById('mensajes');
-    const formulario = document.getElementById('formulario');
-    const campoTexto = document.getElementById('texto');
-
-    // El token identifica tu conversación. Lo guardamos en el navegador (localStorage) para que,
-    // si recargas la página, el agente te reconozca y muestre el historial.
-    // El try/catch evita que la página falle si el navegador bloquea el almacenamiento.
-    const CLAVE_TOKEN = 'xpressms_token';
-    let token = null;
-    try { token = localStorage.getItem(CLAVE_TOKEN); } catch (e) { token = null; }
-
-    function guardarToken(nuevo) {
-      token = nuevo;
-      try { localStorage.setItem(CLAVE_TOKEN, nuevo); } catch (e) { /* sin almacenamiento: seguimos igual */ }
-    }
-
-    // Agrega una burbuja de mensaje. "quien" es 'agente' o 'persona'.
-    // Usamos textContent (no innerHTML) para que nadie pueda inyectar HTML malicioso al escribir.
-    function agregarBurbuja(quien, texto) {
-      const burbuja = document.createElement('div');
-      burbuja.className = 'burbuja ' + quien;
-      burbuja.textContent = texto;
-      zonaMensajes.appendChild(burbuja);
-      zonaMensajes.scrollTop = zonaMensajes.scrollHeight; // baja al último mensaje
-    }
-
-    // Quita los botones rápidos que había antes (para que no se acumulen).
-    function limpiarOpciones() {
-      document.querySelectorAll('.opciones').forEach(el => el.remove());
-    }
-
-    // Muestra la respuesta del agente y, si trae, sus botones rápidos.
-    function mostrarRespuesta(datos) {
-      limpiarOpciones();
-      if (datos.respuesta) agregarBurbuja('agente', datos.respuesta); // null = solo mostrar botones
-      if (datos.opciones && datos.opciones.length > 0) {
-        const caja = document.createElement('div');
-        caja.className = 'opciones';
-        datos.opciones.forEach(texto => {
-          const boton = document.createElement('button');
-          boton.type = 'button';
-          boton.textContent = texto;
-          boton.onclick = () => enviar(texto); // al pulsarlo, es como si la persona lo hubiera escrito
-          caja.appendChild(boton);
-        });
-        zonaMensajes.appendChild(caja);
-        zonaMensajes.scrollTop = zonaMensajes.scrollHeight;
-      }
-    }
-
-    // Envía un mensaje al servidor Rust (POST /agente/mensaje) y muestra la respuesta.
-    async function enviar(texto) {
-      limpiarOpciones();
-      agregarBurbuja('persona', texto);
-      try {
-        const respuesta = await fetch('/agente/mensaje', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: token, texto: texto }), // coincide con MensajeEntrada en Rust
-        });
-        if (respuesta.status === 404) {
-          // El servidor no reconoce el token (por ejemplo, la conversación ya no existe).
-          try { localStorage.removeItem(CLAVE_TOKEN); } catch (e) {}
-          agregarBurbuja('agente', 'Se perdió tu sesión. Recarga la página para empezar de nuevo.');
-          return;
-        }
-        if (!respuesta.ok) throw new Error('Error ' + respuesta.status);
-        mostrarRespuesta(await respuesta.json());
-      } catch (error) {
-        agregarBurbuja('agente', 'Ups, no pude conectarme. Intenta de nuevo en un momento.');
-      }
-    }
-
-    // Cuando la persona pulsa "Enviar" (o Enter):
-    formulario.addEventListener('submit', (evento) => {
-      evento.preventDefault();              // evita que la página se recargue
-      const texto = campoTexto.value.trim();
-      if (texto === '') return;             // no enviamos mensajes vacíos
-      campoTexto.value = '';
-      enviar(texto);
-    });
-
-    // Al abrir la página: pedimos al servidor iniciar (o recuperar) la conversación.
-    // Responde con el token y los mensajes anteriores; los dibujamos en orden.
-    fetch('/agente/iniciar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: token }), // null la primera vez
-    })
-      .then(r => {
-        if (!r.ok) throw new Error('Error ' + r.status);
-        return r.json();
-      })
-      .then(datos => {
-        guardarToken(datos.token);
-        datos.mensajes.forEach(m => agregarBurbuja(m.emisor === 'A' ? 'agente' : 'persona', m.texto));
-        mostrarRespuesta({ respuesta: null, opciones: datos.opciones });
-      })
-      .catch(() => agregarBurbuja('agente', 'Ups, no pude conectarme. Recarga la página.'));
-  </script>
+  <!-- type="module" permite que los scripts se importen entre sí (import / export). -->
+  <script type="module" src="/static/js/chat.js"></script>
 </body>
 </html>

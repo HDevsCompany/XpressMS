@@ -1,0 +1,93 @@
+/* base.css: colores, tipografía y estructura general de la página.
+   Los colores viven aquí, en variables: si quieres cambiar el estilo de toda la plataforma, empieza por este bloque. */
+
+:root {
+  --azul: #1d4ed8;
+  --azul-oscuro: #1e40af;
+  --azul-claro: #dbeafe;
+  --azul-muy-claro: #eff6ff;
+  --fondo: #f1f5f9;
+  --superficie: #ffffff;
+  --texto: #0f172a;
+  --texto-suave: #64748b;
+  --borde: #e2e8f0;
+  --verde: #15803d;
+  --verde-claro: #dcfce7;
+  --rojo: #b91c1c;
+  --radio: 16px;
+  --sombra: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.06);
+  --transicion: 0.2s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, "Segoe UI", sans-serif;
+  background: var(--fondo);
+  color: var(--texto);
+  display: flex;
+  justify-content: center;
+}
+
+/* La "tarjeta" del chat ocupa toda la altura de la pantalla. */
+.chat {
+  width: 100%;
+  max-width: 640px;
+  height: 100vh;
+  height: 100dvh; /* en celulares, descuenta la barra del navegador */
+  display: flex;
+  flex-direction: column;
+  background: var(--superficie);
+  box-shadow: 0 0 24px rgba(15, 23, 42, 0.08);
+}
+
+.chat-cabecera {
+  background: var(--azul);
+  color: #fff;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.boton-cabecera {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transicion);
+}
+
+.boton-cabecera:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.chat-cabecera h1 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.chat-cabecera p {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+/* Si la persona tiene activada la opción "reducir movimiento" en su sistema, quitamos las animaciones. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

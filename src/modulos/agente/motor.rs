@@ -8,6 +8,7 @@
 pub enum Intencion {
     Saludo,      // "hola", "buenas tardes"
     Registrarse, // "quiero registrarme"
+    AgregarCorreo, // "quiero agregar mi correo"
     SoloDePaso,  // "solo estoy de paso"
     Servicios,   // "¿qué servicios técnicos tienen?"
     AgendarCita, // "quiero agendar una cita"
@@ -44,6 +45,9 @@ pub fn detectar_intencion(texto: &str) -> Intencion {
 
     if contiene(&["de paso", "solo miro", "solo estoy viendo", "no quiero registr", "no me quiero registr", "sin registr"]) {
         Intencion::SoloDePaso
+    } else if contiene(&["correo", "email", "e-mail", "mail"]) {
+        // Va ANTES que "registr": "registrar mi correo" es agregar un correo, no empezar un registro.
+        Intencion::AgregarCorreo
     } else if contiene(&["registr", "inscrib", "crear cuenta", "crear una cuenta"]) {
         Intencion::Registrarse
     } else if contiene(&["cita", "agendar", "reserv", "turno"]) {
@@ -59,6 +63,31 @@ pub fn detectar_intencion(texto: &str) -> Intencion {
     }
 }
 
+// Separa un texto en palabras sueltas, ya normalizadas: "¡Sí, acepto!" -> ["si", "acepto"].
+fn palabras(texto: &str) -> Vec<String> {
+    normalizar(texto)
+        .split(|c: char| !c.is_alphanumeric()) // corta en todo lo que no sea letra o número
+        .filter(|palabra| !palabra.is_empty())
+        .map(|palabra| palabra.to_string())
+        .collect()
+}
+
+// ¿La persona dijo que NO? Se revisa primero porque "no acepto" también contiene "acepto".
+pub fn es_negativo(texto: &str) -> bool {
+    palabras(texto)
+        .iter()
+        .any(|p| ["no", "nunca", "rechazo", "negativo", "nel"].contains(&p.as_str()))
+}
+
+// ¿La persona dijo que SÍ? Si dijo que no, nunca cuenta como sí.
+pub fn es_afirmativo(texto: &str) -> bool {
+    !es_negativo(texto)
+        && palabras(texto).iter().any(|p| {
+            ["si", "claro", "acepto", "ok", "dale", "correcto", "correctos", "afirmativo", "yes", "vale", "soy", "listo"]
+                .contains(&p.as_str())
+        })
+}
+
 // Pruebas automáticas: se ejecutan con "cargo test". Si cambias las palabras clave y rompes algo, avisan.
 #[cfg(test)]
 mod pruebas {
@@ -72,6 +101,13 @@ mod pruebas {
     #[test]
     fn reconoce_registro() {
         assert_eq!(detectar_intencion("Quiero registrarme"), Intencion::Registrarse);
+    }
+
+    #[test]
+    fn reconoce_agregar_correo() {
+        assert_eq!(detectar_intencion("Quiero agregar mi correo"), Intencion::AgregarCorreo);
+        assert_eq!(detectar_intencion("Agregar mi correo"), Intencion::AgregarCorreo);
+        assert_eq!(detectar_intencion("quiero registrar mi email"), Intencion::AgregarCorreo);
     }
 
     #[test]
@@ -95,5 +131,19 @@ mod pruebas {
     #[test]
     fn lo_raro_es_desconocido() {
         assert_eq!(detectar_intencion("asdfgh"), Intencion::Desconocida);
+    }
+
+    #[test]
+    fn si_y_no() {
+        assert!(es_afirmativo("Sí, acepto"));
+        assert!(es_afirmativo("claro que sí"));
+        assert!(es_afirmativo("Sí, soy yo"));
+        assert!(es_afirmativo("Sí, son correctos"));
+        assert!(es_negativo("No, no es mi empresa"));
+        assert!(es_negativo("No, gracias"));
+        assert!(es_negativo("no acepto"));
+        assert!(!es_afirmativo("no acepto")); // un "no" nunca cuenta como sí
+        assert!(!es_afirmativo("quizás")); // ni sí ni no
+        assert!(!es_negativo("quizás"));
     }
 }

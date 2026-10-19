@@ -10,7 +10,7 @@ use axum::{extract::State, http::StatusCode, routing::post, Json, Router};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 
-use super::modelo::MensajeGuardado;
+use super::modelo::{Componente, MensajeGuardado};
 use super::{flujo, repositorio};
 
 // Lo que envía el navegador al abrir la página. "token" es Option porque la primera vez no existe.
@@ -25,6 +25,7 @@ struct IniciarSalida {
     token: String,
     mensajes: Vec<MensajeGuardado>,
     opciones: Vec<String>,
+    componente: Option<Componente>, // elemento visual pendiente (por ejemplo la casilla de términos)
 }
 
 // Lo que envía el navegador cuando la persona escribe.
@@ -32,6 +33,8 @@ struct IniciarSalida {
 struct MensajeEntrada {
     token: String,
     texto: String,
+    // Lo envían los elementos visuales (por ejemplo "aceptar_terminos"). Si la persona solo escribe, no viene.
+    accion: Option<String>,
 }
 
 // La respuesta del agente a un mensaje.
@@ -39,6 +42,8 @@ struct MensajeEntrada {
 struct MensajeSalida {
     respuesta: String,
     opciones: Vec<String>,
+    componente: Option<Componente>, // casilla de términos, tarjeta de datos...
+    espera: Option<String>,         // texto de espera para el próximo mensaje ("Consultando tus datos…")
 }
 
 // Agrupa las rutas del agente; main.rs las suma con ".merge(...)".
@@ -90,10 +95,14 @@ async fn iniciar(
         Vec::new()
     };
 
+    // 5. Si la conversación quedó en medio de un paso con elemento visual, lo volvemos a dibujar.
+    let componente = flujo::componente_de_reanudacion(&conversacion.paso);
+
     Ok(Json(IniciarSalida {
         token: conversacion.token,
         mensajes,
         opciones,
+        componente,
     }))
 }
 
@@ -119,8 +128,11 @@ async fn mensaje(
         .await
         .map_err(error_interno)?;
 
-    // 4. El flujo decide qué responder y guardamos la respuesta del agente ('A').
-    let respuesta = flujo::responder(texto);
+    // 4. El flujo decide qué responder (según el paso en que va la conversación) y guardamos
+    //    la respuesta del agente ('A').
+    let respuesta = flujo::responder(&pool, &conversacion, texto, entrada.accion.as_deref())
+        .await
+        .map_err(error_interno)?;
     repositorio::guardar_mensaje(&pool, &conversacion.codigo, "A", &respuesta.texto)
         .await
         .map_err(error_interno)?;
@@ -128,5 +140,7 @@ async fn mensaje(
     Ok(Json(MensajeSalida {
         respuesta: respuesta.texto,
         opciones: respuesta.opciones,
+        componente: respuesta.componente,
+        espera: respuesta.espera,
     }))
 }

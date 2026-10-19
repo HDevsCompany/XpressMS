@@ -1,0 +1,210 @@
+/* carnet.css: la credencial (carnet) que muestra los datos encontrados al registrarse.
+   Estructura: banda azul con logo -> círculo con iniciales + nombre -> cuadrícula de datos (incluye el estado) -> código de barras. */
+
+.carnet {
+  align-self: flex-start;
+  width: min(100%, 340px);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 18px;
+  box-shadow: var(--sombra);
+  overflow: hidden;
+  animation: entrar 0.35s ease;
+}
+
+/* ---------- Banda superior ---------- */
+.carnet-banda {
+  position: relative;
+  height: 92px;
+  background: linear-gradient(120deg, #1e3a8a, #2563eb 60%, #3b82f6);
+}
+
+/* Las formas geométricas se dibujan con un SVG que se ajusta al ancho de la banda. */
+.carnet-formas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.carnet-logo {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  text-align: right;
+  color: #fff;
+  line-height: 1.1;
+}
+
+.carnet-logo strong {
+  display: block;
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+}
+
+.carnet-logo span {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+/* ---------- Identidad: círculo + nombre ---------- */
+.carnet-identidad {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 0 18px;
+  margin-top: -38px; /* el círculo "cabalga" sobre la banda */
+}
+
+.carnet-foto {
+  flex: none;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 4px solid var(--superficie);
+  box-shadow: 0 0 0 2px var(--azul), var(--sombra);
+  background: linear-gradient(145deg, #dbeafe, #93c5fd);
+  color: var(--azul-oscuro);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  animation: aparecer 0.45s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+
+/* Una empresa se muestra con un cuadrado redondeado en lugar de círculo. */
+.carnet.empresa .carnet-foto {
+  border-radius: 20px;
+}
+
+.carnet-nombre {
+  min-width: 0;
+  margin-top: 44px; /* arranca justo debajo de la banda azul, para que el texto oscuro nunca quede sobre el azul */
+}
+
+.carnet-nombre h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.2;
+  color: var(--texto);
+  overflow-wrap: anywhere;
+}
+
+.carnet-nombre p {
+  margin: 3px 0 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--azul);
+}
+
+/* ---------- Cuadrícula de datos ---------- */
+.carnet-datos {
+  margin: 0;
+  padding: 16px 18px 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+}
+
+.carnet-dato {
+  opacity: 0;
+  animation: entrar 0.3s ease forwards; /* cada dato aparece uno tras otro (el retraso lo pone el script) */
+}
+
+.carnet-dato.ancho {
+  grid-column: 1 / -1;
+}
+
+.carnet-dato dt {
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.carnet-dato dd {
+  margin: 2px 0 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* Dato con estado de verificación: el icono va pegado a la derecha del valor. */
+.carnet-dato dd.con-verificacion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap; /* el valor y su icono nunca se separan en dos líneas */
+}
+
+.verif {
+  display: inline-flex;
+  align-items: center;
+  cursor: help;
+}
+
+.verif svg {
+  width: 18px;
+  height: 18px;
+}
+
+.verif-trazo {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.verif.verificado .verif-fondo { fill: #16a34a; }
+.verif.pendiente .verif-fondo { fill: #f59e0b; }
+.verif.fallido .verif-fondo { fill: #dc2626; }
+
+/* El estado va dentro de la cuadrícula: verde cuando está activo, ámbar mientras está pendiente. */
+.carnet-estado.activo dd {
+  color: #15803d;
+}
+
+.carnet-estado.pendiente dd {
+  color: #a16207;
+}
+
+/* ---------- Código de cliente + código de barras (solo en la credencial final) ---------- */
+.carnet.registrado .carnet-datos {
+  padding-bottom: 14px;
+}
+
+.carnet-codigo {
+  margin: 0 18px 18px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--borde);
+  text-align: center;
+  animation: entrar 0.4s ease 0.5s both;
+}
+
+.carnet-codigo small {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.carnet-barras {
+  display: block;
+  width: 100%;
+  height: 56px;
+  margin: 8px 0 6px;
+  border-radius: 6px;
+}
+
+.carnet-codigo strong {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.05rem;
+  letter-spacing: 0.28em;
+  padding-left: 0.28em; /* compensa el espacio final de las letras para que quede centrado */
+}

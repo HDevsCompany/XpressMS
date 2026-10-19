@@ -30,8 +30,14 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# Carpeta de trabajo del programa en ejecución. La carpeta static/ se busca relativa a ella.
+WORKDIR /app
+
 # Copiamos solo el programa ya compilado desde la etapa 1 (se llama "xpressms", como el paquete).
 COPY --from=compilar /app/target/release/xpressms /usr/local/bin/xpressms
+
+# Archivos que el navegador descarga tal cual: estilos (css), scripts (js) y textos legales.
+COPY static ./static
 
 # Comando que se ejecuta al encender el contenedor.
 # Render le da el puerto en la variable PORT y config.rs ya la lee.

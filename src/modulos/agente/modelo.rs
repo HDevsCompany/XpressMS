@@ -1,6 +1,6 @@
 // modelo.rs: las estructuras que representan los datos del agente en Rust.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
 // Una conversación guardada en Agente.Conversaciones.
@@ -8,10 +8,33 @@ use sqlx::FromRow;
 // Los nombres de los campos deben coincidir con los alias ("as codigo") que se usan en el SQL.
 #[derive(FromRow)]
 pub struct Conversacion {
-    pub codigo: String, // código de 9 caracteres (clave primaria)
-    pub token: String,  // código secreto que guarda el navegador para reconocer la conversación
-    #[allow(dead_code)] // todavía no lo leemos; lo usará el flujo de registro y de citas
-    pub paso: String,   // en qué punto va la conversación ('inicio', luego los pasos del registro...)
+    pub codigo: String,          // código de 9 caracteres (clave primaria)
+    pub token: String,           // código secreto que guarda el navegador para reconocer la conversación
+    pub paso: String,            // en qué punto va ('inicio', 'consentimiento', 'telefono'...)
+    pub cliente: Option<String>, // código del cliente, si la persona ya se registró o se identificó
+    pub datos: String,           // lo recogido hasta ahora (JSON guardado como texto)
+}
+
+// Lo que el agente va recogiendo mientras registra a la persona. Se guarda en la columna
+// ConversacionesDatos y se borra al terminar el registro (los datos definitivos viven en Acceso.Clientes).
+// "Default" crea una versión vacía; "serde(default)" permite leer JSON antiguos aunque falten campos.
+#[derive(Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Datos {
+    pub consentimiento: Option<String>,    // fecha y hora exactas en que aceptó el tratamiento de sus datos
+    pub tipo_documento: Option<String>,    // código SUNAT: "1", "6"...
+    pub numero_documento: Option<String>,
+    pub paterno: Option<String>,
+    pub materno: Option<String>,
+    pub nombres: Option<String>,
+    pub razon_social: Option<String>,
+    pub direccion: Option<String>,
+    pub sexo: Option<String>,
+    pub fecha_nacimiento: Option<String>,
+    pub telefono: Option<String>,
+    pub correo: Option<String>,
+    pub cliente_existente: Option<String>, // si el documento ya estaba registrado: su código
+    pub intentos: u8,                      // intentos fallidos al verificar identidad
 }
 
 // Un mensaje del chat, tal como se guarda en Agente.Mensajes.
@@ -20,4 +43,45 @@ pub struct Conversacion {
 pub struct MensajeGuardado {
     pub emisor: String, // 'P' = lo escribió la persona, 'A' = lo escribió el agente
     pub texto: String,  // el contenido del mensaje
+}
+
+// Estado de verificación de un dato de contacto (se dibuja como un icono junto al dato).
+// "Fallido" y "Verificado" todavía no se usan: se activarán cuando exista el envío de SMS de confirmación.
+#[allow(dead_code)]
+#[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Verificacion {
+    Verificado, // check verde: la persona confirmó el dato
+    Pendiente,  // reloj amarillo: aún no se confirma
+    Fallido,    // x roja: no se pudo confirmar
+}
+
+// Una fila de la tarjeta de datos: "Nombres" -> "JUAN CARLOS".
+// "verificacion" es opcional: solo los datos de contacto (celular) la llevan; si es None, no se envía en el JSON.
+#[derive(Serialize)]
+pub struct Campo {
+    pub etiqueta: String,
+    pub valor: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub verificacion: Option<Verificacion>,
+}
+
+// Elementos visuales especiales que el agente puede pedirle al navegador que dibuje,
+// además de los mensajes de texto. El JSON lleva un campo "tipo" que dice cuál es:
+//   {"tipo":"consentimiento"}  -> casilla de términos y condiciones
+//   {"tipo":"identidad", ...}  -> credencial (carnet) con los datos encontrados
+#[derive(Serialize)]
+#[serde(tag = "tipo", rename_all = "snake_case")]
+pub enum Componente {
+    Consentimiento,
+    Identidad {
+        variante: String, // "persona" o "empresa": cambia el icono y el color de la credencial
+        nombre: String,   // lo que va en grande: "Juan Carlos Perez Gomez"
+        subtitulo: String, // lo que va debajo del nombre: "Persona natural"
+        campos: Vec<Campo>, // el resto de datos (documento, sexo, nacimiento, dirección)
+        estado: String,   // "Pendiente de confirmar" (tarjeta de confirmación) o "Activo" (cliente ya registrado)
+        // Código de cliente: solo existe en la credencial final. Si falta, no se envía el campo en el JSON.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        codigo: Option<String>,
+    },
 }

@@ -1,0 +1,239 @@
+/* componentes.css: elementos especiales del chat: casilla de términos, tarjeta de datos y ventana legal. */
+
+/* ---------- Tarjeta base ---------- */
+.tarjeta {
+  align-self: flex-start;
+  width: min(92%, 420px);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 14px 16px;
+  animation: entrar 0.3s ease;
+}
+
+.tarjeta h3 {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  color: var(--azul);
+}
+
+/* ---------- Casilla de términos y condiciones ---------- */
+.casilla {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.casilla input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--azul);
+  cursor: pointer;
+  flex: none;
+}
+
+.enlace {
+  color: var(--azul);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+}
+
+.enlace:hover {
+  color: var(--azul-oscuro);
+}
+
+.acciones {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.boton-primario,
+.boton-secundario {
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background var(--transicion), opacity var(--transicion), transform var(--transicion);
+}
+
+.boton-primario {
+  background: var(--azul);
+  color: #fff;
+  border: 1px solid var(--azul);
+}
+
+.boton-primario:hover:not(:disabled) {
+  background: var(--azul-oscuro);
+}
+
+.boton-secundario {
+  background: var(--superficie);
+  color: var(--texto-suave);
+  border: 1px solid var(--borde);
+}
+
+.boton-secundario:hover:not(:disabled) {
+  background: var(--fondo);
+}
+
+.boton-primario:disabled,
+.boton-secundario:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Estado final de la tarjeta de consentimiento (ya respondida). */
+.estado-final {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.estado-final.aceptado {
+  color: var(--verde);
+}
+
+.estado-final.rechazado {
+  color: var(--texto-suave);
+}
+
+.marca {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: #fff;
+  animation: aparecer 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.aceptado .marca {
+  background: var(--verde);
+}
+
+.rechazado .marca {
+  background: var(--texto-suave);
+}
+
+@keyframes aparecer {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* ---------- Ventana de términos y condiciones ---------- */
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s;
+  z-index: 10;
+}
+
+.modal-fondo.abierto {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal {
+  background: var(--superficie);
+  border-radius: 20px;
+  width: min(100%, 560px);
+  max-height: min(85vh, 640px);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.3);
+  transform: translateY(16px) scale(0.97);
+  transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.modal-fondo.abierto .modal {
+  transform: translateY(0) scale(1);
+}
+
+.modal-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.modal-cabecera h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.modal-cerrar {
+  border: 0;
+  background: var(--fondo);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--texto-suave);
+}
+
+.modal-cerrar:hover {
+  background: var(--borde);
+}
+
+.modal-cuerpo {
+  padding: 16px 20px;
+  overflow-y: auto;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.modal-cuerpo h3 {
+  font-size: 0.95rem;
+  margin: 18px 0 6px;
+  color: var(--azul);
+}
+
+.modal-cuerpo h3:first-child {
+  margin-top: 0;
+}
+
+.modal-cuerpo p,
+.modal-cuerpo ul {
+  margin: 0 0 8px;
+}
+
+.modal-cuerpo ul {
+  padding-left: 20px;
+}
+
+.modal-pie {
+  padding: 12px 20px;
+  border-top: 1px solid var(--borde);
+  display: flex;
+  justify-content: flex-end;
+}

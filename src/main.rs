@@ -6,6 +6,7 @@ mod db;
 mod error;
 mod modulos;
 
+use tower_http::services::ServeDir; // Entrega los archivos de la carpeta static/ (estilos, scripts, textos legales).
 use axum::{extract::State, http::StatusCode, response::Html, routing::get, Router}; // Piezas de axum que vamos a usar.
 use sqlx::PgPool; // El tipo del grupo de conexiones, para poder recibirlo en el manejador de /salud.
 
@@ -22,7 +23,8 @@ async fn main() {
     let app = Router::new()
         .route("/", get(inicio))     // la página principal, donde aparece el agente
         .route("/salud", get(salud)) // cuando alguien abra /salud, se ejecuta la función "salud"
-        .merge(modulos::agente::rutas::rutas()) // suma las rutas del agente: /agente/saludo y /agente/mensaje
+        .nest_service("/static", ServeDir::new("static")) // /static/css/..., /static/js/... salen de la carpeta static/
+        .merge(modulos::agente::rutas::rutas()) // suma las rutas del agente: /agente/iniciar y /agente/mensaje
         .with_state(pool);           // comparte el pool con todas las rutas para que puedan consultar la base
 
     // 4. Arma la dirección donde escuchará el servidor. 0.0.0.0 significa "acepta conexiones desde cualquier lugar" (lo que pide Render).
