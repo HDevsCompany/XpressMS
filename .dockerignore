@@ -1,0 +1,5 @@
+# Archivos que Docker NO debe copiar al contenedor.
+# .env tiene tu contraseña: nunca debe entrar a la imagen (en Render se configura aparte).
+target
+.env
+.git
