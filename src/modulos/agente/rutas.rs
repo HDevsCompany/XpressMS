@@ -1,72 +1,132 @@
-// rutas.rs (agente): las "puertas" del chat. Aquí solo se reciben y se devuelven mensajes;
-// la inteligencia vive en motor.rs (qué quiso decir) y, más adelante, en flujo.rs (qué sigue).
+// rutas.rs (agente): las "puertas" del chat. Solo reciben JSON, llaman al repositorio y al flujo,
+// y devuelven JSON. No contienen SQL ni textos del agente.
+//
+// Hay dos puertas:
+//   POST /agente/iniciar  -> al abrir la página: crea la conversación (o recupera la anterior) y
+//                            devuelve el token y los mensajes que ya existían.
+//   POST /agente/mensaje  -> cada vez que la persona escribe: guarda su mensaje, responde y guarda la respuesta.
 
-use axum::{
-    routing::{get, post},
-    Json, Router,
-};
+use axum::{extract::State, http::StatusCode, routing::post, Json, Router};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 
-// "super" significa "el módulo de arriba" (agente); de allí tomamos motor.rs.
-use super::motor::{detectar_intencion, Intencion};
+use super::modelo::MensajeGuardado;
+use super::{flujo, repositorio};
 
-// Lo que nos envía el navegador cuando la persona escribe. Ejemplo JSON: {"texto": "hola"}
-// "Deserialize" = convertir ese JSON en esta estructura de Rust.
+// Lo que envía el navegador al abrir la página. "token" es Option porque la primera vez no existe.
+#[derive(Deserialize)]
+struct IniciarEntrada {
+    token: Option<String>,
+}
+
+// Lo que respondemos al abrir: el token (el navegador lo guarda), el historial y los botones.
+#[derive(Serialize)]
+struct IniciarSalida {
+    token: String,
+    mensajes: Vec<MensajeGuardado>,
+    opciones: Vec<String>,
+}
+
+// Lo que envía el navegador cuando la persona escribe.
 #[derive(Deserialize)]
 struct MensajeEntrada {
+    token: String,
     texto: String,
 }
 
-// Lo que le respondemos al navegador. Ejemplo JSON: {"respuesta": "...", "opciones": ["..."]}
-// "Serialize" = convertir esta estructura de Rust en JSON.
-// "opciones" son botones rápidos que el navegador mostrará debajo del mensaje.
+// La respuesta del agente a un mensaje.
 #[derive(Serialize)]
 struct MensajeSalida {
     respuesta: String,
     opciones: Vec<String>,
 }
 
-// Agrupa las rutas del agente. main.rs la usa con ".merge(...)" para sumarlas a la aplicación.
-// Router<PgPool> significa "estas rutas viven dentro de una app que comparte el pool de la base".
+// Agrupa las rutas del agente; main.rs las suma con ".merge(...)".
 pub fn rutas() -> Router<PgPool> {
     Router::new()
-        .route("/agente/saludo", get(saludo))      // el navegador la llama al abrir la página
-        .route("/agente/mensaje", post(mensaje))   // el navegador la llama cada vez que la persona escribe
+        .route("/agente/iniciar", post(iniciar))
+        .route("/agente/mensaje", post(mensaje))
 }
 
-// GET /agente/saludo: el primer mensaje del agente, con dos botones.
-async fn saludo() -> Json<MensajeSalida> {
-    Json(MensajeSalida {
-        respuesta: "¡Hola! 👋 Soy el asistente de H&Devs. Puedo ayudarte con nuestro servicio técnico. \
-                    ¿Quieres que te registre para atenderte mejor, o solo estás de paso? \
-                    Si es así, no hay problema: puedes preguntarme lo que desees."
-            .to_string(),
-        opciones: vec!["Quiero registrarme".to_string(), "Solo estoy de paso".to_string()],
-    })
+// Convierte un error de base de datos en un "500" para el navegador y deja el detalle en la terminal.
+fn error_interno(error: sqlx::Error) -> StatusCode {
+    eprintln!("Error de base de datos: {}", error);
+    StatusCode::INTERNAL_SERVER_ERROR
 }
 
-// POST /agente/mensaje: recibe lo que escribió la persona y responde según su intención.
-// "Json(entrada): Json<MensajeEntrada>" abre el JSON recibido y deja "entrada.texto" listo para usar.
-async fn mensaje(Json(entrada): Json<MensajeEntrada>) -> Json<MensajeSalida> {
-    // 1. El motor entiende qué quiso decir.
-    let intencion = detectar_intencion(&entrada.texto);
-
-    // 2. Elegimos la respuesta. Por ahora son textos de prueba: en el siguiente paso
-    //    el flujo real (registro, citas) reemplazará estas respuestas.
-    let (respuesta, opciones): (&str, Vec<&str>) = match intencion {
-        Intencion::Saludo => ("¡Hola! ¿En qué te puedo ayudar con el servicio técnico?", vec!["Ver servicios", "Agendar una cita"]),
-        Intencion::Registrarse => ("Perfecto, quiero registrarte. (El registro lo construimos en el siguiente paso.)", vec![]),
-        Intencion::SoloDePaso => ("¡Sin problema! Pregúntame lo que quieras sobre nuestros servicios.", vec!["Ver servicios", "Agendar una cita"]),
-        Intencion::Servicios => ("Con gusto te cuento sobre nuestros servicios. (La lista real la conectaremos a la base de datos.)", vec!["Agendar una cita"]),
-        Intencion::AgendarCita => ("Claro, vamos a agendar tu cita. (El agendamiento lo construimos más adelante.)", vec![]),
-        Intencion::Despedida => ("¡Gracias a ti! Aquí estaré si necesitas algo más. 😊", vec![]),
-        Intencion::Desconocida => ("Mmm, no estoy seguro de haber entendido. ¿Puedes decirlo de otra forma?", vec!["Ver servicios", "Agendar una cita"]),
+// POST /agente/iniciar
+async fn iniciar(
+    State(pool): State<PgPool>,
+    Json(entrada): Json<IniciarEntrada>,
+) -> Result<Json<IniciarSalida>, StatusCode> {
+    // 1. Si el navegador trajo un token, buscamos esa conversación; si no, no hay ninguna.
+    let existente = match entrada.token {
+        Some(token) => repositorio::buscar_por_token(&pool, &token).await.map_err(error_interno)?,
+        None => None,
     };
 
-    // 3. Armamos la respuesta, convirtiendo los textos fijos (&str) en textos propios (String).
-    Json(MensajeSalida {
-        respuesta: respuesta.to_string(),
-        opciones: opciones.into_iter().map(|o| o.to_string()).collect(),
-    })
+    // 2. Usamos la conversación existente o creamos una nueva (con el saludo guardado como primer mensaje).
+    let conversacion = match existente {
+        Some(conversacion) => conversacion,
+        None => {
+            let nueva = repositorio::crear_conversacion(&pool).await.map_err(error_interno)?;
+            let saludo = flujo::saludo_inicial();
+            repositorio::guardar_mensaje(&pool, &nueva.codigo, "A", &saludo.texto)
+                .await
+                .map_err(error_interno)?;
+            nueva
+        }
+    };
+
+    // 3. Traemos el historial para que la persona vea su conversación aunque recargue la página.
+    let mensajes = repositorio::listar_mensajes(&pool, &conversacion.codigo)
+        .await
+        .map_err(error_interno)?;
+
+    // 4. Mostramos los botones del saludo solo si todavía no hubo más conversación.
+    let opciones = if mensajes.len() <= 1 {
+        flujo::saludo_inicial().opciones
+    } else {
+        Vec::new()
+    };
+
+    Ok(Json(IniciarSalida {
+        token: conversacion.token,
+        mensajes,
+        opciones,
+    }))
+}
+
+// POST /agente/mensaje
+async fn mensaje(
+    State(pool): State<PgPool>,
+    Json(entrada): Json<MensajeEntrada>,
+) -> Result<Json<MensajeSalida>, StatusCode> {
+    // 1. Validamos el texto: no vacío y no demasiado largo (400 = "petición inválida").
+    let texto = entrada.texto.trim();
+    if texto.is_empty() || texto.chars().count() > 1000 {
+        return Err(StatusCode::BAD_REQUEST);
+    }
+
+    // 2. Buscamos la conversación por su token; si no existe, 404 ("no encontrada").
+    let conversacion = repositorio::buscar_por_token(&pool, &entrada.token)
+        .await
+        .map_err(error_interno)?
+        .ok_or(StatusCode::NOT_FOUND)?;
+
+    // 3. Guardamos lo que escribió la persona ('P').
+    repositorio::guardar_mensaje(&pool, &conversacion.codigo, "P", texto)
+        .await
+        .map_err(error_interno)?;
+
+    // 4. El flujo decide qué responder y guardamos la respuesta del agente ('A').
+    let respuesta = flujo::responder(texto);
+    repositorio::guardar_mensaje(&pool, &conversacion.codigo, "A", &respuesta.texto)
+        .await
+        .map_err(error_interno)?;
+
+    Ok(Json(MensajeSalida {
+        respuesta: respuesta.texto,
+        opciones: respuesta.opciones,
+    }))
 }

@@ -57,6 +57,18 @@
     const formulario = document.getElementById('formulario');
     const campoTexto = document.getElementById('texto');
 
+    // El token identifica tu conversación. Lo guardamos en el navegador (localStorage) para que,
+    // si recargas la página, el agente te reconozca y muestre el historial.
+    // El try/catch evita que la página falle si el navegador bloquea el almacenamiento.
+    const CLAVE_TOKEN = 'xpressms_token';
+    let token = null;
+    try { token = localStorage.getItem(CLAVE_TOKEN); } catch (e) { token = null; }
+
+    function guardarToken(nuevo) {
+      token = nuevo;
+      try { localStorage.setItem(CLAVE_TOKEN, nuevo); } catch (e) { /* sin almacenamiento: seguimos igual */ }
+    }
+
     // Agrega una burbuja de mensaje. "quien" es 'agente' o 'persona'.
     // Usamos textContent (no innerHTML) para que nadie pueda inyectar HTML malicioso al escribir.
     function agregarBurbuja(quien, texto) {
@@ -75,7 +87,7 @@
     // Muestra la respuesta del agente y, si trae, sus botones rápidos.
     function mostrarRespuesta(datos) {
       limpiarOpciones();
-      agregarBurbuja('agente', datos.respuesta);
+      if (datos.respuesta) agregarBurbuja('agente', datos.respuesta); // null = solo mostrar botones
       if (datos.opciones && datos.opciones.length > 0) {
         const caja = document.createElement('div');
         caja.className = 'opciones';
@@ -99,8 +111,15 @@
         const respuesta = await fetch('/agente/mensaje', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ texto: texto }), // coincide con MensajeEntrada { texto } en Rust
+          body: JSON.stringify({ token: token, texto: texto }), // coincide con MensajeEntrada en Rust
         });
+        if (respuesta.status === 404) {
+          // El servidor no reconoce el token (por ejemplo, la conversación ya no existe).
+          try { localStorage.removeItem(CLAVE_TOKEN); } catch (e) {}
+          agregarBurbuja('agente', 'Se perdió tu sesión. Recarga la página para empezar de nuevo.');
+          return;
+        }
+        if (!respuesta.ok) throw new Error('Error ' + respuesta.status);
         mostrarRespuesta(await respuesta.json());
       } catch (error) {
         agregarBurbuja('agente', 'Ups, no pude conectarme. Intenta de nuevo en un momento.');
@@ -116,10 +135,22 @@
       enviar(texto);
     });
 
-    // Al abrir la página: el agente saluda (GET /agente/saludo).
-    fetch('/agente/saludo')
-      .then(r => r.json())
-      .then(mostrarRespuesta)
+    // Al abrir la página: pedimos al servidor iniciar (o recuperar) la conversación.
+    // Responde con el token y los mensajes anteriores; los dibujamos en orden.
+    fetch('/agente/iniciar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: token }), // null la primera vez
+    })
+      .then(r => {
+        if (!r.ok) throw new Error('Error ' + r.status);
+        return r.json();
+      })
+      .then(datos => {
+        guardarToken(datos.token);
+        datos.mensajes.forEach(m => agregarBurbuja(m.emisor === 'A' ? 'agente' : 'persona', m.texto));
+        mostrarRespuesta({ respuesta: null, opciones: datos.opciones });
+      })
       .catch(() => agregarBurbuja('agente', 'Ups, no pude conectarme. Recarga la página.'));
   </script>
 </body>

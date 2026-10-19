@@ -9,4 +9,5 @@ dotenvy = "0.15.7"
 serde = { version = "1.0.229", features = ["derive"] }
 sqlx = { version = "0.9.0", features = ["runtime-tokio", "tls-rustls", "postgres"] }
 tokio = { version = "1.53.3", features = ["full"] }
+uuid = { version = "1.28.0", features = ["v4"] }
 # Las dependencias las agregamos paso a paso.
