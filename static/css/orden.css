@@ -1,0 +1,201 @@
+/* orden.css: la tarjeta de una cita u orden de servicio.
+   Estructura: cabecera (icono + servicio + estado) -> código -> datos (cita, equipo, problema) -> seguimiento. */
+
+.orden {
+  align-self: flex-start;
+  width: min(100%, 340px);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 18px;
+  box-shadow: var(--sombra);
+  padding: 18px;
+  animation: entrar 0.35s ease;
+}
+
+.orden-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.orden-icono {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--azul-claro);
+  color: var(--azul);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orden-icono svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.orden-titulo {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.orden-titulo h3 {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+/* La etiqueta con el estado actual. */
+.orden-estado {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--azul-claro);
+  color: var(--azul-oscuro);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* El código de la orden, grande y fácil de copiar. */
+.orden-codigo {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--azul-muy-claro);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.orden-codigo span {
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.orden-codigo strong {
+  font-size: 1.2rem;
+  letter-spacing: 0.12em;
+  color: var(--azul-oscuro);
+  user-select: all;
+}
+
+.orden-datos {
+  margin: 14px 0 0;
+  padding-top: 14px;
+  border-top: 1px dashed var(--borde);
+  display: grid;
+  gap: 12px;
+}
+
+.orden-dato dt {
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.orden-dato dd {
+  margin: 2px 0 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.orden-subtitulo {
+  margin: 16px 0 8px;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+/* Seguimiento: línea vertical con un punto por paso. */
+.orden-pasos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.orden-paso {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding-bottom: 14px;
+}
+
+.orden-paso:last-child {
+  padding-bottom: 0;
+}
+
+/* La línea que une un punto con el siguiente. */
+.orden-paso:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 16px;
+  bottom: 0;
+  width: 2px;
+  background: var(--borde);
+}
+
+.orden-paso.hecho:not(:last-child)::before {
+  background: var(--verde);
+}
+
+.orden-punto {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  border-radius: 50%;
+  border: 2px solid var(--borde);
+  background: var(--superficie);
+}
+
+.orden-paso.hecho .orden-punto {
+  border-color: var(--verde);
+  background: var(--verde);
+}
+
+.orden-paso.actual .orden-punto {
+  border-color: var(--azul);
+  background: var(--azul);
+  box-shadow: 0 0 0 4px var(--azul-claro);
+}
+
+.orden-paso-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.orden-paso-nombre {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.orden-paso.pendiente .orden-paso-nombre {
+  font-weight: 500;
+  color: var(--texto-suave);
+}
+
+.orden-paso.actual .orden-paso-nombre {
+  color: var(--azul-oscuro);
+}
+
+.orden-paso-fecha {
+  font-size: 0.75rem;
+  color: var(--texto-suave);
+}

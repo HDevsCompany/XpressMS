@@ -1,0 +1,369 @@
+/* gestion.css: pantallas de administración del panel (listas, pestañas, ventanas emergentes).
+   Usa las variables de color de base.css y los formularios de panel.css. */
+
+.panel-ancho {
+  max-width: 920px;
+}
+
+.cabecera-acciones {
+  display: flex;
+  gap: 8px;
+}
+
+a.boton-cabecera {
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* ---------- Pestañas ---------- */
+.pestanas {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.pestana {
+  font: inherit;
+  font-weight: 600;
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  padding: 10px 16px;
+  color: var(--texto-suave);
+  cursor: pointer;
+  transition: color var(--transicion), border-color var(--transicion);
+}
+
+.pestana:hover {
+  color: var(--azul);
+}
+
+.pestana[aria-selected="true"] {
+  color: var(--azul);
+  border-bottom-color: var(--azul);
+}
+
+/* ---------- Listas ---------- */
+.lista-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.lista-barra h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.lista-barra small {
+  color: var(--texto-suave);
+  font-weight: 400;
+  margin-left: 6px;
+}
+
+.lista-barra .boton-principal {
+  padding: 8px 14px;
+  font-size: 0.9rem;
+}
+
+.fila {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 14px 18px;
+  margin-bottom: 10px;
+}
+
+.fila-texto {
+  min-width: 0;
+}
+
+.fila-titulo {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.fila-descripcion {
+  margin: 4px 0 8px;
+  color: var(--texto-suave);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.fila-acciones {
+  display: flex;
+  gap: 8px;
+  flex: none;
+}
+
+.etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.etiqueta {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--fondo);
+  color: var(--texto-suave);
+  border: 1px solid var(--borde);
+}
+
+.etiqueta.precio {
+  background: var(--verde-claro);
+  color: var(--verde);
+  border-color: transparent;
+}
+
+.etiqueta.equipo {
+  background: var(--azul-muy-claro);
+  color: var(--azul-oscuro);
+  border-color: var(--azul-claro);
+}
+
+.vacio {
+  text-align: center;
+  color: var(--texto-suave);
+  padding: 32px 16px;
+  background: var(--superficie);
+  border: 1px dashed var(--borde);
+  border-radius: var(--radio);
+}
+
+/* ---------- Botones secundarios ---------- */
+.boton-secundario,
+.boton-peligro {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  color: var(--texto);
+  transition: background var(--transicion), border-color var(--transicion);
+}
+
+.boton-secundario:hover {
+  background: var(--azul-muy-claro);
+  border-color: var(--azul-claro);
+}
+
+.boton-peligro {
+  color: var(--rojo);
+}
+
+.boton-peligro:hover {
+  background: #fee2e2;
+  border-color: #fecaca;
+}
+
+button.boton-peligro.lleno {
+  background: var(--rojo);
+  border-color: var(--rojo);
+  color: #fff;
+}
+
+/* ---------- Ventana emergente ---------- */
+.dialogo {
+  border: 0;
+  border-radius: var(--radio);
+  padding: 0;
+  width: min(92vw, 520px);
+  max-height: 92vh;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.3);
+  color: var(--texto);
+}
+
+.dialogo::backdrop {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.dialogo-cuerpo {
+  padding: 22px 24px;
+}
+
+.dialogo-cuerpo h2 {
+  margin: 0 0 14px;
+  font-size: 1.15rem;
+}
+
+.dialogo-cuerpo > p {
+  margin: 0 0 18px;
+  color: var(--texto-suave);
+  line-height: 1.45;
+}
+
+.dialogo-botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.dialogo-botones .boton-principal {
+  padding: 9px 18px;
+}
+
+.dialogo-botones .boton-secundario {
+  padding: 9px 16px;
+  font-size: 1rem;
+}
+
+.campo textarea {
+  font: inherit;
+  font-weight: 400;
+  padding: 10px 12px;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  resize: vertical;
+  min-height: 84px;
+  color: var(--texto);
+}
+
+.campo textarea:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px var(--azul-claro);
+}
+
+.fila-doble {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.fila-doble .campo,
+.campo input {
+  min-width: 0;
+  width: 100%;
+}
+
+.grupo-equipos {
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 0;
+}
+
+.grupo-equipos legend {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0 6px;
+}
+
+.opcion-equipo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.opcion-equipo input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--azul);
+}
+
+@media (max-width: 560px) {
+  .fila {
+    flex-direction: column;
+  }
+  .fila-doble {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Personal ---------- */
+.etiqueta.alerta {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.etiqueta.peligro {
+  background: #fee2e2;
+  color: var(--rojo);
+  border-color: #fecaca;
+}
+
+.tu {
+  margin-left: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--azul-claro);
+  color: var(--azul-oscuro);
+  vertical-align: middle;
+}
+
+.campo select {
+  font: inherit;
+  font-weight: 400;
+  padding: 10px 12px;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  background: var(--superficie);
+  color: var(--texto);
+}
+
+.datos-fijos {
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--fondo);
+  border-radius: 10px;
+  font-size: 0.88rem;
+  color: var(--texto-suave);
+}
+
+.clave-temporal {
+  background: var(--azul-muy-claro);
+  border: 1px solid var(--azul-claro);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+}
+
+.clave-linea {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.clave-linea span {
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+.clave-linea code {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  user-select: all; /* un clic selecciona todo el valor */
+}
+
+.dialogo-cuerpo .aviso-unico {
+  margin: 0 0 14px;
+  color: #92400e;
+  font-size: 0.85rem;
+  font-weight: 600;
+}

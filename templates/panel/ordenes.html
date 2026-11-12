@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!-- Órdenes de servicio: el Administrador asigna técnicos y el personal cambia el estado de cada orden. -->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Órdenes de servicio · H&amp;Devs</title>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/panel.css">
+  <link rel="stylesheet" href="/static/css/gestion.css">
+  <link rel="stylesheet" href="/static/css/ordenes.css">
+</head>
+<body class="pagina-panel">
+  <header class="panel-cabecera">
+    <div>
+      <h1>H&amp;Devs · Órdenes de servicio</h1>
+      <p id="cabecera-usuario">&nbsp;</p>
+    </div>
+    <div class="cabecera-acciones">
+      <a class="boton-cabecera" href="/panel">Inicio</a>
+      <button id="boton-salir" class="boton-cabecera" type="button">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main class="panel-contenido panel-ancho">
+    <!-- Las pestañas se arman desde pagina.js (según el rol); aquí solo está el contenedor. -->
+    <div id="pestanas" class="pestanas" role="tablist"></div>
+
+    <p id="aviso-error" class="mensaje-error" role="alert" hidden></p>
+    <section id="vista-ordenes" role="tabpanel"></section>
+  </main>
+
+  <!-- Ventana emergente reutilizable: el detalle de cada orden se dibuja aquí dentro. -->
+  <dialog id="dialogo" class="dialogo dialogo-ancho"></dialog>
+
+  <script type="module" src="/static/js/panel/ordenes/pagina.js"></script>
+</body>
+</html>

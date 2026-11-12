@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<!-- La tienda (/catalogo): el catálogo de productos en una página propia y pública (la ve cualquiera, con o sin sesión).
+     Regla de la plataforma: esta página solo MUESTRA. No tiene buscador ni filtros: quien filtra, busca y maneja el carrito es Juno, que vive en esta
+     página como una burbuja flotante abajo a la derecha (su conversación es aparte: no toca el chat principal).
+     El encabezado y el menú lateral son los mismos del lienzo (templates/parciales/encabezado_menu.html).
+     Estilos: static/css/tienda.css, ficha.css (la ficha del producto) y carrito.css (carrito y pedido); lienzo.css para el encabezado y el menú. Scripts: static/js/tienda.js y static/js/tienda/juno.js. -->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catálogo de productos · XpressMS</title>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/chat.css">
+  <link rel="stylesheet" href="/static/css/componentes.css">
+  <link rel="stylesheet" href="/static/css/carnet.css">
+  <link rel="stylesheet" href="/static/css/servicio.css">
+  <link rel="stylesheet" href="/static/css/orden.css">
+  <link rel="stylesheet" href="/static/css/lienzo.css">
+  <link rel="stylesheet" href="/static/css/tienda.css">
+  <link rel="stylesheet" href="/static/css/ficha.css">
+  <link rel="stylesheet" href="/static/css/carrito.css">
+</head>
+<body class="lz tn" data-vista="pagina" data-sesion="visitante">
+
+  <!--ENCABEZADO_MENU-->
+
+  <!-- ===== Página: la vitrina ===== -->
+  <main class="tn-main" id="catalogo">
+    <div class="tn-int">
+      <a class="tn-volver" href="/chat">
+        <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>Volver a la conversación con Juno
+      </a>
+      <h1>Catálogo de productos</h1>
+      <p class="tn-sub">Todo lo que tenemos en tienda. Los precios están en soles (S/).</p>
+
+      <!-- Solo se lee: dice qué filtró Juno y cuántos productos se ven. -->
+      <div class="tn-estado" id="catalogo-estado">
+        <img src="/static/img/juno.png" alt="">
+        <span id="catalogo-estado-texto">Cargando el catálogo…</span>
+      </div>
+
+      <div class="tn-grid" id="catalogo-grid"></div>
+
+      <!-- Si el catálogo no cargó o está vacío. -->
+      <section class="tn-aviso" id="catalogo-aviso" hidden>
+        <img src="/static/img/juno.png" alt="">
+        <h2 id="catalogo-aviso-titulo"></h2>
+        <p id="catalogo-aviso-texto"></p>
+        <button type="button" class="tn-reintentar" id="catalogo-reintentar" hidden>Reintentar</button>
+      </section>
+    </div>
+  </main>
+
+  <!-- ===== Juno: burbuja flotante y ventana de chat ===== -->
+  <div class="tn-juno" id="juno" data-estado="cerrada">
+    <div class="tn-lanzador" id="juno-lanzador">
+      <div class="tn-globo" id="juno-globo"><b>¿Buscas algo en especial?</b> Pregúntale a Juno y filtra por ti.</div>
+      <button type="button" class="tn-bola" id="juno-abrir" aria-label="Abrir el chat con Juno" aria-controls="juno-ventana" aria-expanded="false">
+        <img src="/static/img/juno.png" alt="">
+      </button>
+    </div>
+
+    <section class="tn-ventana" id="juno-ventana" role="dialog" aria-label="Chat con Juno" hidden>
+      <div class="tn-vcab">
+        <img src="/static/img/juno.png" alt="">
+        <div class="tn-vnombre"><b>Juno</b><small><i></i>Asistente de la tienda · en línea</small></div>
+        <button type="button" class="tn-vbtn" id="juno-cerrar" aria-label="Minimizar el chat" title="Minimizar">
+          <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </div>
+
+      <!-- Antes de escribir: la presentación de Juno (no es un mensaje guardado, solo la ventana vacía). -->
+      <div class="tn-vacio" id="juno-vacio">
+        <img src="/static/img/juno.png" alt="">
+        <b>Hola, soy Juno</b>
+        <p>Mira la tienda con calma. Si buscas algo o quieres añadir productos a tu carrito, dímelo aquí.</p>
+      </div>
+
+      <!-- La conversación (mismas burbujas, tarjetas y botones del chat principal). -->
+      <div id="mensajes" aria-live="polite"></div>
+
+      <div class="tn-sugerencias" id="juno-sugerencias"></div>
+
+      <form class="tn-caja" id="juno-form" autocomplete="off">
+        <div class="tn-campo">
+          <input id="juno-texto" type="text" placeholder="Escribe lo que buscas…" aria-label="Escribe lo que buscas" maxlength="1000" required>
+          <button type="submit" aria-label="Enviar">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script type="module" src="/static/js/tienda.js"></script>
+</body>
+</html>

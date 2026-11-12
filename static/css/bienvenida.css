@@ -1,0 +1,412 @@
+/* bienvenida.css: la presentación de Juno y las tarjetas con las que empieza la conversación.
+   Cada tarjeta define su color con dos variables: --c (color fuerte) y --cl (fondo suave del icono). */
+
+/* ---------- Saludo: el icono de Juno junto a su primer mensaje ---------- */
+.saludo {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  align-self: stretch;
+  animation: entrar 0.3s ease;
+}
+
+.avatar {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #e0e7ff, #ffffff);
+  border: 2px solid #c7d2fe;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.avatar img {
+  width: 90%;
+  height: auto;
+  display: block;
+}
+
+.saludo .burbuja {
+  max-width: calc(100% - 68px);
+}
+
+.burbuja .nombre-agente {
+  display: block;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--azul-oscuro);
+  margin-bottom: 3px;
+}
+
+/* ---------- Tarjetas ---------- */
+.bienvenida {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bienvenida-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.bienvenida .t {
+  --c: #1d4ed8;
+  --cl: #dbeafe;
+  font: inherit;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-top: 5px solid var(--c);
+  border-radius: 18px;
+  box-shadow: var(--sombra);
+  padding: 22px 12px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  cursor: pointer;
+  text-decoration: none;
+  /* Entrada escalonada: la última tarjeta termina antes de 0,6 s. */
+  animation: entrar-tarjeta 0.4s ease backwards; /* "backwards": al terminar no bloquea el efecto al pasar el cursor */
+  animation-delay: calc(var(--i, 0) * 70ms);
+  transition: transform var(--transicion), box-shadow var(--transicion), opacity var(--transicion);
+}
+
+.bienvenida .t.verde {
+  --c: #15803d;
+  --cl: #dcfce7;
+}
+
+.bienvenida .t.ambar {
+  --c: #c2410c;
+  --cl: #ffedd5;
+}
+
+.bienvenida .t.violeta {
+  --c: #6d28d9;
+  --cl: #ede9fe;
+}
+
+.bienvenida .t:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.08), 0 10px 24px rgba(15, 23, 42, 0.12);
+}
+
+.bienvenida .t:focus-visible {
+  outline: 3px solid var(--c);
+  outline-offset: 2px;
+}
+
+.bienvenida .t:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.bienvenida .ic {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: var(--cl);
+  color: var(--c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.bienvenida .ic svg {
+  width: 34px;
+  height: 34px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bienvenida .textos {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bienvenida .titulo {
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.bienvenida .ir {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--c);
+}
+
+/* Portal de equipo: una franja discreta debajo de las tarjetas. */
+.bienvenida .portal {
+  flex-direction: row;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1.5px dashed #a78bfa;
+  border-top: 1.5px dashed #a78bfa;
+  border-radius: 16px;
+  background: #faf8ff;
+  box-shadow: none;
+  color: #5b21b6;
+  animation-delay: 0.25s;
+}
+
+.bienvenida .portal .ic {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.bienvenida .portal .ic svg {
+  width: 20px;
+  height: 20px;
+}
+
+.bienvenida .portal .titulo {
+  font-size: 0.95rem;
+  color: #5b21b6;
+}
+
+/* Después de elegir, las demás tarjetas se apagan (el portal sigue disponible). */
+.bienvenida.bloqueada .t:not(.elegida):not(.portal) {
+  opacity: 0.45;
+}
+
+.bienvenida .t:disabled {
+  cursor: default;
+}
+
+.bienvenida .t.elegida {
+  box-shadow: 0 0 0 2px var(--c), var(--sombra);
+}
+
+/* ---------- Animaciones del icono de cada tarjeta (al pasar el cursor, enfocar o pulsar) ---------- */
+.bienvenida .t:hover .ic svg,
+.bienvenida .t:focus-visible .ic svg,
+.bienvenida .t.anima .ic svg {
+  animation-duration: 0.55s;
+  animation-timing-function: ease-in-out;
+}
+
+/* Ya soy cliente: la llave gira como al abrir una cerradura. */
+.bienvenida .t.azul:hover .ic svg,
+.bienvenida .t.azul:focus-visible .ic svg,
+.bienvenida .t.azul.anima .ic svg {
+  animation-name: llave;
+}
+
+/* Soy nuevo: el documento "se sella" con un pequeño rebote. */
+.bienvenida .t.verde:hover .ic svg,
+.bienvenida .t.verde:focus-visible .ic svg,
+.bienvenida .t.verde.anima .ic svg {
+  animation-name: sello;
+}
+
+/* Solo estoy de paso: el ojo parpadea. */
+.bienvenida .t.ambar:hover .ic svg,
+.bienvenida .t.ambar:focus-visible .ic svg,
+.bienvenida .t.ambar.anima .ic svg {
+  animation-name: parpadeo;
+}
+
+/* Portal de equipo: el candado se sacude como si se abriera. */
+.bienvenida .t.violeta:hover .ic svg,
+.bienvenida .t.violeta:focus-visible .ic svg,
+.bienvenida .t.violeta.anima .ic svg {
+  animation-name: candado;
+}
+
+@keyframes entrar-tarjeta {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes llave {
+  0% {
+    transform: rotate(0);
+  }
+  40% {
+    transform: rotate(-40deg);
+  }
+  75% {
+    transform: rotate(18deg);
+  }
+  100% {
+    transform: rotate(0);
+  }
+}
+
+@keyframes sello {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(0.78);
+  }
+  70% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes parpadeo {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  45% {
+    transform: scaleY(0.08);
+  }
+}
+
+@keyframes candado {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-14deg);
+  }
+  60% {
+    transform: rotate(10deg) translateY(-2px);
+  }
+}
+
+/* ---------- Celulares: las tarjetas pasan a filas, una debajo de otra ---------- */
+@media (max-width: 560px) {
+  .bienvenida-tarjetas {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .bienvenida .t:not(.portal) {
+    flex-direction: row;
+    text-align: left;
+    padding: 12px 14px;
+    gap: 14px;
+    border-top: 1px solid var(--borde);
+    border-left: 6px solid var(--c);
+  }
+
+  .bienvenida .t:not(.portal) .ic {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+  }
+
+  .bienvenida .t:not(.portal) .ic svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* Con "reducir movimiento" activado, las animaciones se quitan (la regla general está en base.css);
+   aquí además se evita que las tarjetas "salten" al pasar el cursor. */
+@media (prefers-reduced-motion: reduce) {
+  .bienvenida .t:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* ---------- Modo inicio: la bienvenida ocupa toda la pantalla (como la página de inicio de la plataforma) ----------
+   Mientras se ven las tarjetas, la página NO parece un chat: se ensancha, se oculta la barra para escribir y el contenido
+   se centra. Al elegir una tarjeta, chat.js quita la clase "modo-inicio" y la página vuelve a ser la conversación. */
+body.modo-inicio .chat {
+  max-width: none;
+  background: var(--fondo);
+  box-shadow: none;
+}
+
+body.modo-inicio .chat-formulario,
+body.modo-inicio #nueva-conversacion {
+  display: none;
+}
+
+body.modo-inicio .chat-cabecera {
+  padding: 16px 28px;
+}
+
+body.modo-inicio .chat-cabecera h1 {
+  font-size: 1.25rem;
+}
+
+body.modo-inicio #mensajes {
+  align-items: center;
+  justify-content: center; /* el saludo y las tarjetas quedan en el centro de la pantalla */
+  gap: 28px;
+  padding: 32px 24px 48px;
+}
+
+body.modo-inicio .saludo {
+  width: 100%;
+  max-width: 640px;
+  align-self: center;
+}
+
+body.modo-inicio .saludo .avatar {
+  width: 72px;
+  height: 72px;
+}
+
+body.modo-inicio .saludo .burbuja {
+  max-width: calc(100% - 86px);
+  font-size: 1.05rem;
+  padding: 14px 18px;
+}
+
+body.modo-inicio .bienvenida {
+  width: 100%;
+  max-width: 980px;
+  align-self: center;
+}
+
+@media (min-width: 561px) {
+  body.modo-inicio .bienvenida-tarjetas {
+    gap: 18px;
+  }
+
+  body.modo-inicio .bienvenida .t:not(.portal) {
+    padding: 34px 22px 28px;
+    gap: 16px;
+    border-radius: 20px;
+  }
+
+  body.modo-inicio .bienvenida .t:not(.portal) .ic {
+    width: 78px;
+    height: 78px;
+    border-radius: 24px;
+  }
+
+  body.modo-inicio .bienvenida .t:not(.portal) .ic svg {
+    width: 42px;
+    height: 42px;
+  }
+
+  body.modo-inicio .bienvenida .titulo {
+    font-size: 1.2rem;
+  }
+
+  body.modo-inicio .bienvenida .portal {
+    padding: 14px;
+  }
+}

@@ -1,0 +1,37 @@
+/* temas.css: el chat toma el color del camino por el que entró la persona.
+     - sin tema (azul): cliente reconocido, que es el color normal de la plataforma
+     - verde:  entró por «Regístrate con Juno»
+     - bronce: entró por «Ver servicios y productos»
+   Todo el chat usa las variables --azul*, así que basta con cambiar su valor (el nombre queda por historia).
+   El tema lo pone static/js/tema.js en la etiqueta <html> (data-tema). */
+
+:root[data-tema="verde"] {
+  --azul: #15803d;
+  --azul-oscuro: #166534;
+  --azul-claro: #dcfce7;
+  --azul-muy-claro: #f0fdf4;
+}
+
+:root[data-tema="bronce"] {
+  --azul: #9a5a24;
+  --azul-oscuro: #7c4a1d;
+  --azul-claro: #faefe2;
+  --azul-muy-claro: #fdf8f2;
+}
+
+/* La credencial (carnet) tiene colores propios: se adaptan al tema. */
+:root[data-tema="verde"] .carnet-banda {
+  background: linear-gradient(120deg, #14532d, #15803d 60%, #22c55e);
+}
+
+:root[data-tema="verde"] .carnet-foto {
+  background: linear-gradient(145deg, #dcfce7, #86efac);
+}
+
+:root[data-tema="bronce"] .carnet-banda {
+  background: linear-gradient(120deg, #6b3d17, #9a5a24 60%, #c08a55);
+}
+
+:root[data-tema="bronce"] .carnet-foto {
+  background: linear-gradient(145deg, #faefe2, #e6cdb0);
+}

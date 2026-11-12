@@ -46,9 +46,8 @@ export function mostrarTarjetaServicio(datos) {
   if (datos.tiempo) lista.appendChild(crearDato('Tiempo estimado', datos.tiempo));
   if (datos.equipo) lista.appendChild(crearDato('Equipo', datos.equipo));
 
-  // --- Aviso sobre el precio ---
-  const nota = crear('p', 'servicio-nota', datos.nota);
-
-  tarjeta.append(cabecera, descripcion, lista, nota);
+  // --- Aviso sobre el precio (solo si el servicio lo tiene activado) ---
+  tarjeta.append(cabecera, descripcion, lista);
+  if (datos.nota) tarjeta.append(crear('p', 'servicio-nota', datos.nota));
   agregar(tarjeta);
 }

@@ -1,0 +1,622 @@
+/* acceso.css: la página de ingreso (/ingresar). Una tarjeta con dos formularios (cliente y equipo) y un panel
+   de color que se desliza de un lado al otro. Colores: azul = clientes y Juno, violeta = equipo de H&Devs.
+   Los estilos de la cabecera vienen de base.css. */
+
+.ing {
+  --vio: #6d28d9;
+  --vio-claro: #ede9fe;
+  --vio-oscuro: #5b21b6;
+  align-items: flex-start; /* base.css centra el body; aquí la página ocupa todo el ancho */
+}
+
+.ing-pagina {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.ing-principal {
+  flex: 1;
+  display: flex;
+  flex-direction: column; /* la tarjeta arriba y, debajo, el enlace «solo mirar» */
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 24px 32px;
+}
+
+/* ---------- La tarjeta ---------- */
+.ing-tarjeta {
+  position: relative;
+  width: min(1000px, 100%);
+  height: 600px;
+  background: var(--superficie);
+  border-radius: 26px;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06), 0 24px 60px rgba(15, 23, 42, 0.16);
+  overflow: hidden;
+  animation: ing-entrar 0.4s ease backwards;
+}
+
+@keyframes ing-entrar {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Los dos formularios (cada uno ocupa una mitad) ---------- */
+.ing-form {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  padding: 36px 52px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.ing-cliente {
+  left: 0;
+  --c: var(--azul);
+  --cl: var(--azul-claro);
+}
+
+.ing-equipo {
+  left: 50%;
+  --c: var(--vio);
+  --cl: var(--vio-claro);
+}
+
+.ing-icono {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  background: var(--cl);
+  color: var(--c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  flex: none;
+}
+
+.ing-icono svg {
+  width: 30px;
+  height: 30px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* La imagen del equipo va en el mismo marco circular que Juno, en violeta suave. */
+.ing-icono.ing-foto {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: rgba(109, 40, 217, 0.1);
+  border: 3px solid rgba(109, 40, 217, 0.28);
+  overflow: hidden;
+  align-items: flex-end;
+}
+
+.ing-foto img {
+  width: 92%;
+  height: auto;
+  display: block;
+}
+
+.ing-form h2 {
+  margin: 0 0 4px;
+  font-size: 1.55rem;
+}
+
+.ing-cliente h2 {
+  margin-bottom: 22px;
+}
+
+.ing-sub {
+  margin: 0 0 20px;
+  color: var(--texto-suave);
+  font-size: 0.93rem;
+}
+
+/* ---------- Campos ---------- */
+.ing-campo {
+  margin-bottom: 14px;
+}
+
+.ing-campo label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.84rem;
+  margin-bottom: 6px;
+}
+
+.ing-caja {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 14px;
+  border: 1.5px solid var(--borde);
+  border-radius: 14px;
+  background: #f8fafc;
+  color: #94a3b8;
+  transition: border-color var(--transicion), box-shadow var(--transicion), background var(--transicion);
+}
+
+.ing-caja:focus-within {
+  border-color: var(--c);
+  background: var(--superficie);
+  box-shadow: 0 0 0 3px var(--cl);
+  color: var(--c);
+}
+
+.ing-caja svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+
+.ing-caja input,
+.ing-caja select {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--texto);
+}
+
+.ing-caja input::placeholder {
+  color: #94a3b8;
+}
+
+/* Botón "ojo" para ver u ocultar la contraseña. */
+.ing-ojo {
+  border: 0;
+  background: transparent;
+  padding: 4px;
+  margin-right: -4px;
+  display: flex;
+  cursor: pointer;
+  color: #94a3b8;
+  border-radius: 8px;
+}
+
+.ing-ojo:hover,
+.ing-ojo[aria-pressed="true"] {
+  color: var(--vio);
+}
+
+.ing-ojo:focus-visible {
+  outline: 2px solid var(--vio);
+}
+
+.ing-error {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fef2f2;
+  color: var(--rojo);
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.ing-boton {
+  width: 100%;
+  height: 50px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--c);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: filter var(--transicion), transform var(--transicion);
+}
+
+.ing-boton:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.ing-boton:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.ing-boton:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.ing-nota {
+  margin: 14px 0 0;
+  font-size: 0.84rem;
+  color: var(--texto-suave);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.ing-nota a,
+.ing-nota strong {
+  color: var(--c);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ing-nota a:hover {
+  text-decoration: underline;
+}
+
+/* «Regístrate con Juno»: el verde del registro (el mismo que usaban las tarjetas de bienvenida). */
+.ing-nota a.ing-registro {
+  color: var(--verde);
+}
+
+/* «Solo quieres mirar»: una pastilla debajo de la tarjeta, con el ojo en ámbar. */
+.ing-mirar {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 20px 8px 10px;
+  border: 1.5px solid var(--borde);
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--texto-suave);
+  font-size: 0.92rem;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  transition: border-color var(--transicion), box-shadow var(--transicion), transform var(--transicion);
+}
+
+.ing-mirar strong {
+  color: #9a5a24; /* el mismo bronce suave del ojo */
+  font-weight: 700;
+}
+
+.ing-mirar:hover {
+  border-color: #e6cdb0;
+  box-shadow: 0 6px 16px rgba(154, 90, 36, 0.12);
+  transform: translateY(-1px);
+}
+
+.ing-mirar:focus-visible {
+  outline: 3px solid #f3e2cf;
+  outline-offset: 2px;
+  border-color: #e6cdb0;
+}
+
+.ing-mirar-icono {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #faefe2;
+  color: #9a5a24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ing-mirar-icono svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Al pasar el cursor, el ojo parpadea (como en la tarjeta anterior). */
+.ing-mirar:hover .ing-mirar-icono svg,
+.ing-mirar:focus-visible .ing-mirar-icono svg {
+  animation: ing-parpadeo 0.6s ease;
+}
+
+@keyframes ing-parpadeo {
+  0%, 100% { transform: scaleY(1); }
+  40% { transform: scaleY(0.12); }
+  60% { transform: scaleY(1); }
+}
+
+/* ---------- Panel deslizante ---------- */
+.ing-over {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  z-index: 2;
+  transition: left 0.7s cubic-bezier(0.65, 0, 0.25, 1);
+}
+
+.ing-tarjeta[data-lado="cliente"] .ing-over {
+  left: 50%;
+}
+
+/* Cada "capa" es el panel con su color y su mensaje; se cruzan mientras el panel se desliza. */
+.ing-cap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 48px;
+  color: #fff;
+  overflow: hidden;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.7s ease, visibility 0s linear 0s;
+}
+
+.ing-cap.azul {
+  background: radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.16) 0 2px, transparent 3px) 0 0 / 30px 30px,
+    linear-gradient(150deg, #1e3a8a, #1d4ed8 55%, #3b82f6);
+}
+
+.ing-cap.vio {
+  background: radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.16) 0 2px, transparent 3px) 0 0 / 30px 30px,
+    linear-gradient(150deg, #4c1d95, #6d28d9 55%, #8b5cf6);
+}
+
+.ing-cap::before,
+.ing-cap::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ing-cap::before {
+  width: 340px;
+  height: 340px;
+  right: -120px;
+  top: -110px;
+}
+
+.ing-cap::after {
+  width: 260px;
+  height: 260px;
+  left: -100px;
+  bottom: -90px;
+}
+
+.ing-cap > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Solo se ve la capa que corresponde al lado actual. */
+.ing-tarjeta[data-lado="equipo"] .ing-cap.vio,
+.ing-tarjeta[data-lado="cliente"] .ing-cap.azul {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.7s ease, visibility 0s linear 0.7s;
+}
+
+.ing-avatar {
+  flex: none;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: 3px solid rgba(255, 255, 255, 0.55);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.ing-avatar img {
+  width: 92%;
+  height: auto;
+  display: block;
+}
+
+.ing-avatar.grande {
+  width: 150px;
+  height: 150px;
+  margin-bottom: 18px;
+}
+
+.ing-over-titulo {
+  margin: 0 0 10px;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.ing-over-texto {
+  margin: 0 0 22px;
+  max-width: 300px;
+  line-height: 1.5;
+  opacity: 0.93;
+}
+
+.ing-over-boton {
+  border: 0;
+  background: #fff;
+  color: var(--azul-oscuro);
+  font: inherit;
+  font-weight: 700;
+  padding: 13px 28px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform var(--transicion), box-shadow var(--transicion);
+}
+
+.ing-cap.vio .ing-over-boton {
+  color: var(--vio-oscuro);
+}
+
+.ing-over-boton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+}
+
+.ing-over-boton:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 3px;
+}
+
+/* Al abrir la página no se anima el panel: solo se anima cuando la persona lo cambia. */
+.ing-sin-animar .ing-over,
+.ing-sin-animar .ing-cap {
+  transition: none !important;
+}
+
+/* ---------- Elementos que solo existen en celulares ---------- */
+.ing-pestanas,
+.ing-juno-movil {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .ing-principal {
+    padding: 18px 14px 32px;
+    justify-content: flex-start;
+    gap: 16px;
+  }
+
+  .ing-tarjeta {
+    width: 100%;
+  }
+
+  .ing-mirar {
+    width: 100%;
+    border-radius: 18px;
+    padding: 10px 14px 10px 10px;
+  }
+
+  .ing-tarjeta {
+    height: auto;
+    border-radius: 22px;
+  }
+
+  .ing-over {
+    display: none; /* en celulares no hay panel deslizante: se usan las pestañas */
+  }
+
+  .ing-form {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 8px 22px 26px;
+    overflow: visible;
+  }
+
+  /* Solo se muestra el formulario del lado elegido. */
+  .ing-tarjeta[data-lado="equipo"] .ing-cliente,
+  .ing-tarjeta[data-lado="cliente"] .ing-equipo {
+    display: none;
+  }
+
+  .ing-form h2 {
+    font-size: 1.35rem;
+  }
+
+  .ing-pestanas {
+    display: flex;
+    margin: 14px;
+    padding: 4px;
+    gap: 4px;
+    background: #f1f5f9;
+    border-radius: 14px;
+  }
+
+  .ing-pestanas button {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    padding: 11px 0;
+    border-radius: 11px;
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--texto-suave);
+    cursor: pointer;
+    transition: background var(--transicion), color var(--transicion);
+  }
+
+  .ing-pestanas button[aria-selected="true"] {
+    color: #fff;
+  }
+
+  .ing-pestanas button[data-ir="equipo"][aria-selected="true"] {
+    background: var(--vio);
+  }
+
+  .ing-pestanas button[data-ir="cliente"][aria-selected="true"] {
+    background: var(--azul);
+  }
+
+  .ing-juno-movil {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    margin-top: 22px;
+    padding: 14px;
+    border: 0;
+    border-radius: 18px;
+    background: linear-gradient(150deg, #1e3a8a, #1d4ed8);
+    color: #fff;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .ing-juno-movil strong {
+    display: block;
+    font-size: 0.95rem;
+  }
+
+  .ing-juno-movil small {
+    font-size: 0.8rem;
+    opacity: 0.9;
+  }
+}
+
+/* ---------- Dentro de la ventana de la página principal (marco de «Iniciar sesión») ---------- */
+/* Solo se ve la tarjeta: sin cabecera, sin enlace de «solo mirar» y con el fondo transparente (lo oscuro lo pone la ventana). */
+html.incrustado,
+html.incrustado body.ing {
+  background: transparent;
+}
+
+html.incrustado .ing-pagina > .chat-cabecera,
+html.incrustado .ing-mirar {
+  display: none;
+}
+
+html.incrustado .ing-principal {
+  padding: 20px;
+}
+
+@media (max-width: 760px) {
+  html.incrustado .ing-principal {
+    padding: 4px 8px 20px;
+  }
+}

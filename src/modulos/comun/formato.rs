@@ -58,6 +58,16 @@ pub fn nombre_sexo(codigo: &str) -> &'static str {
     }
 }
 
+// Un celular con casi todo oculto, para mostrarlo sin exponerlo: "987654321" -> "+51 9•• ••• 321".
+// Si no tiene 9 dígitos, devuelve un texto genérico.
+pub fn telefono_enmascarado(telefono: &str) -> String {
+    if telefono.len() == 9 && telefono.chars().all(|c| c.is_ascii_digit()) {
+        format!("+51 {}•• ••• {}", &telefono[0..1], &telefono[6..9])
+    } else {
+        "tu celular".to_string()
+    }
+}
+
 // "915054365" -> "+51 915 054 365". Si no son 9 dígitos, lo devuelve tal cual.
 pub fn formatear_telefono(telefono: &str) -> String {
     if telefono.len() == 9 && telefono.chars().all(|c| c.is_ascii_digit()) {
@@ -88,6 +98,58 @@ pub fn precio_base(precio: Option<&str>) -> String {
     match precio {
         Some(valor) => format!("Desde S/ {}", valor),
         None => "A cotizar".to_string(),
+    }
+}
+
+// "12345678" -> "1•••••78": deja visibles el primer dígito y los dos últimos, para que la persona se reconozca
+// sin exponer su documento. Si es muy corto, lo oculta todo.
+pub fn documento_enmascarado(numero: &str) -> String {
+    let letras: Vec<char> = numero.chars().collect();
+    if letras.len() < 6 {
+        return "••••".to_string();
+    }
+    let ocultas = "•".repeat(letras.len() - 3);
+    let ultimas: String = letras[letras.len() - 2..].iter().collect();
+    format!("{}{}{}", letras[0], ocultas, ultimas)
+}
+
+// "1" -> "DNI", "6" -> "RUC"... (los nombres de Comun.TiposDocumento).
+pub fn nombre_tipo_documento(codigo: &str) -> &'static str {
+    match codigo {
+        "1" => "DNI",
+        "6" => "RUC",
+        "4" => "Carnet de extranjería",
+        "7" => "Pasaporte",
+        _ => "Documento",
+    }
+}
+
+// "1999-03-14" -> "14 de marzo de 1999". Si no tiene el formato esperado, lo devuelve igual.
+pub fn fecha_larga(iso: &str) -> String {
+    const MESES: [&str; 12] = [
+        "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre",
+        "noviembre", "diciembre",
+    ];
+    let partes: Vec<&str> = iso.get(..10).unwrap_or(iso).split('-').collect();
+    if partes.len() == 3 {
+        if let (Ok(dia), Ok(mes), Ok(anio)) = (partes[2].parse::<u32>(), partes[1].parse::<usize>(), partes[0].parse::<u32>()) {
+            if (1..=12).contains(&mes) && (1..=31).contains(&dia) {
+                return format!("{} de {} de {}", dia, MESES[mes - 1], anio);
+            }
+        }
+    }
+    iso.to_string()
+}
+
+// "Pedro Alonso Ramos Quispe" -> "PR": la inicial de la primera y de la última palabra (para el círculo del avatar).
+pub fn iniciales(nombre: &str) -> String {
+    let palabras: Vec<&str> = nombre.split_whitespace().collect();
+    let primera = palabras.first().and_then(|p| p.chars().next());
+    let ultima = palabras.last().and_then(|p| p.chars().next());
+    match (primera, ultima) {
+        (Some(a), Some(b)) if palabras.len() > 1 => format!("{}{}", a, b).to_uppercase(),
+        (Some(a), _) => a.to_uppercase().to_string(),
+        _ => "?".to_string(),
     }
 }
 
@@ -138,6 +200,8 @@ mod pruebas {
     fn telefono() {
         assert_eq!(formatear_telefono("915054365"), "+51 915 054 365");
         assert_eq!(formatear_telefono("123"), "123");
+        assert_eq!(telefono_enmascarado("987654321"), "+51 9•• ••• 321");
+        assert_eq!(telefono_enmascarado("12"), "tu celular");
     }
 
     #[test]
@@ -150,5 +214,20 @@ mod pruebas {
     fn precios() {
         assert_eq!(precio_base(Some("60.00")), "Desde S/ 60.00");
         assert_eq!(precio_base(None), "A cotizar");
+    }
+
+    #[test]
+    fn documentos_y_nombres_del_perfil() {
+        assert_eq!(documento_enmascarado("12345678"), "1•••••78");
+        assert_eq!(documento_enmascarado("20123456789"), "2••••••••89");
+        assert_eq!(documento_enmascarado("123"), "••••");
+        assert_eq!(nombre_tipo_documento("1"), "DNI");
+        assert_eq!(nombre_tipo_documento("9"), "Documento");
+        assert_eq!(fecha_larga("1999-03-14"), "14 de marzo de 1999");
+        assert_eq!(fecha_larga("1999-03-14T00:00:00"), "14 de marzo de 1999");
+        assert_eq!(fecha_larga("raro"), "raro");
+        assert_eq!(iniciales("Pedro Alonso Ramos Quispe"), "PQ");
+        assert_eq!(iniciales("Juan"), "J");
+        assert_eq!(iniciales(""), "?");
     }
 }

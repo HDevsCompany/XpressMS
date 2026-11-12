@@ -15,6 +15,7 @@ pub struct NuevoCliente {
     pub sexo: Option<String>,             // 'M' o 'F'
     pub fecha_nacimiento: Option<String>, // formato AAAA-MM-DD
     pub telefono: String,
+    pub telefono_verificado: bool, // true si el celular ya se confirmó con el código por SMS
     pub correo: Option<String>,
     pub consentimiento: String, // fecha y hora exactas en que aceptó el tratamiento de sus datos
 }

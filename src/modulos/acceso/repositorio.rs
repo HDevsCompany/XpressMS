@@ -41,8 +41,9 @@ pub async fn crear_cliente(pool: &PgPool, cliente: &NuevoCliente) -> Result<Stri
         "insert into Acceso.Clientes \
          (ClientesCodigo, ClientesTipoDocumento, ClientesNumeroDocumento, ClientesPaterno, ClientesMaterno, \
           ClientesNombres, ClientesRazonSocial, ClientesDireccion, ClientesSexo, ClientesFechaNacimiento, \
-          ClientesTelefono, ClientesCorreo, ClientesFechaConsentimiento) \
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::text::date, $11, $12, $13::text::timestamptz)",
+          ClientesTelefono, ClientesCorreo, ClientesFechaConsentimiento, ClientesTelefonoVerificado) \
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::text::date, $11, $12, $13::text::timestamptz, \
+                 case when $14 then now() else null end)",
     )
     .bind(&codigo)
     .bind(&cliente.tipo_documento)
@@ -57,6 +58,7 @@ pub async fn crear_cliente(pool: &PgPool, cliente: &NuevoCliente) -> Result<Stri
     .bind(&cliente.telefono)
     .bind(cliente.correo.as_deref())
     .bind(&cliente.consentimiento)
+    .bind(cliente.telefono_verificado)
     .execute(pool)
     .await?;
 

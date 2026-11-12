@@ -3,7 +3,7 @@
 //  - Con texto: círculo giratorio y el texto ("Consultando tus datos…").
 
 import { crear } from '../dom.js';
-import { agregar } from '../burbujas.js';
+import { agregar, filaAgente } from '../burbujas.js';
 
 // Devuelve una función "quitar" que borra el indicador cuando llega la respuesta.
 export function mostrarCargando(texto) {
@@ -19,6 +19,7 @@ export function mostrarCargando(texto) {
     burbuja.appendChild(puntos);
   }
 
-  agregar(burbuja);
-  return () => burbuja.remove();
+  // Lleva el icono del agente, igual que sus mensajes.
+  const fila = agregar(filaAgente(burbuja));
+  return () => fila.remove();
 }

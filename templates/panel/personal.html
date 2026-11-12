@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<!-- Personal y usuarios: quién trabaja en H&Devs, con qué cuenta entra y qué rol tiene (solo Administrador). -->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Personal y usuarios · H&amp;Devs</title>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/panel.css">
+  <link rel="stylesheet" href="/static/css/gestion.css">
+</head>
+<body class="pagina-panel">
+  <header class="panel-cabecera">
+    <div>
+      <h1>H&amp;Devs · Personal y usuarios</h1>
+      <p id="cabecera-usuario">&nbsp;</p>
+    </div>
+    <div class="cabecera-acciones">
+      <a class="boton-cabecera" href="/panel">Inicio</a>
+      <button id="boton-salir" class="boton-cabecera" type="button">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main class="panel-contenido panel-ancho">
+    <p id="aviso-error" class="mensaje-error" role="alert" hidden></p>
+    <section id="vista-personal"></section>
+  </main>
+
+  <!-- Ventana emergente reutilizable: formularios, confirmaciones y la clave temporal se dibujan aquí. -->
+  <dialog id="dialogo" class="dialogo"></dialog>
+
+  <script type="module" src="/static/js/panel/personal/pagina.js"></script>
+</body>
+</html>

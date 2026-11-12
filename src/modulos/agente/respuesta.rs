@@ -3,7 +3,7 @@
 use super::modelo::Componente;
 
 // Botones del menú principal.
-pub const MENU: [&str; 2] = ["Ver servicios", "Agendar una cita"];
+pub const MENU: [&str; 3] = ["Ver servicios", "Agendar una cita", "Ver productos"];
 
 // Lo que el agente responde: un texto y, opcionalmente, botones rápidos, un elemento visual especial
 // (casilla de términos, credencial, tarjeta de servicio) y un aviso de espera para el próximo mensaje.
@@ -14,6 +14,8 @@ pub struct Respuesta {
     // Si tiene valor, el navegador mostrará ese texto con una animación ("Consultando tus datos…")
     // mientras procesa el SIGUIENTE mensaje de la persona (porque sabemos que será lento).
     pub espera: Option<String>,
+    // El estado de «Tu solicitud» (solo en la ventana de Juno de /servicios): lo arma flujo_solicitud al final de cada respuesta.
+    pub solicitud: Option<Componente>,
 }
 
 impl Respuesta {
@@ -40,5 +42,6 @@ pub fn r(texto: &str, opciones: &[&str]) -> Respuesta {
         opciones: opciones.iter().map(|o| o.to_string()).collect(),
         componente: None,
         espera: None,
+        solicitud: None,
     }
 }

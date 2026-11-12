@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<!-- Tarjeta de ingreso de XpressMS. La sirven /ingreso (lado de cliente primero; la página principal la muestra dentro de
+     una ventana al pulsar «Iniciar sesión») y /ingresar (lado de equipo primero). Una sola tarjeta con dos lados
+     que se intercambian con un panel deslizante:
+       - Soy cliente: se reconoce con su documento y los últimos 3 dígitos de su celular, y entra al chat ya identificado.
+         Quien es nuevo se registra con Juno, y quien solo quiere mirar entra al chat sin identificarse.
+       - Portal de equipo: usuario y contraseña del personal de H&Devs (los entrega el administrador).
+     Los scripts están en static/js/acceso (deslizar, ojo de contraseña, formulario de cliente) y static/js/panel/ingresar.js (equipo). -->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XpressMS by H&amp;Devs</title>
+  <!-- Si esta tarjeta se muestra dentro de la ventana de la página principal (un marco), se marca para quitar lo que sobra. -->
+  <script>if (window.self !== window.top) document.documentElement.classList.add('incrustado');</script>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/acceso.css">
+</head>
+<body class="ing">
+  <div class="ing-pagina">
+    <header class="chat-cabecera">
+      <div>
+        <h1>XpressMS</h1>
+        <p>by H&amp;Devs · Hardware and Development</p>
+      </div>
+    </header>
+
+    <main class="ing-principal">
+      <!-- data-lado dice qué lado se ve: "cliente" o "equipo" (formulario del personal). Lo cambia static/js/acceso/interfaz.js. -->
+      <div id="tarjeta" class="ing-tarjeta ing-sin-animar" data-lado="cliente">
+
+        <!-- Solo en celulares: pestañas para cambiar de lado (en pantallas anchas se usa el panel deslizante). -->
+        <div class="ing-pestanas" role="tablist" aria-label="Tipo de ingreso">
+          <button type="button" role="tab" data-ir="equipo" aria-controls="panel-equipo">Portal de equipo</button>
+          <button type="button" role="tab" data-ir="cliente" aria-controls="panel-cliente">Soy cliente</button>
+        </div>
+
+        <!-- Lado de cliente (a la izquierda) -->
+        <section id="panel-cliente" class="ing-form ing-cliente" aria-labelledby="titulo-cliente">
+          <div class="ing-icono">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M10.8 12.2 20 3M16 7l3 3M14 9l2 2"/></svg>
+          </div>
+          <h2 id="titulo-cliente">Soy cliente</h2>
+
+          <form id="formulario-cliente" novalidate autocomplete="off">
+            <div class="ing-campo">
+              <label for="tipo-documento">Tipo de documento</label>
+              <div class="ing-caja">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="2"/><path d="M14 10h4M14 13h3"/></svg>
+                <select id="tipo-documento" name="tipo" required>
+                  <option value="1">DNI</option>
+                  <option value="6">RUC</option>
+                  <option value="4">Carnet de extranjería</option>
+                  <option value="7">Pasaporte</option>
+                </select>
+              </div>
+            </div>
+            <div class="ing-campo">
+              <label for="numero-documento">Número de documento</label>
+              <div class="ing-caja">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h14M5 15h14M10 4 8 20M16 4l-2 16"/></svg>
+                <input id="numero-documento" name="numero" type="text" inputmode="numeric" maxlength="14" placeholder="8 dígitos" autocomplete="off" required>
+              </div>
+            </div>
+            <div class="ing-campo">
+              <label for="ultimos-digitos">Últimos 3 dígitos de tu celular</label>
+              <div class="ing-caja">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M11 18h2"/></svg>
+                <input id="ultimos-digitos" name="ultimos" type="password" inputmode="numeric" maxlength="3" placeholder="• • •" autocomplete="off" required>
+              </div>
+            </div>
+            <p id="error-cliente" class="ing-error" role="alert" hidden></p>
+            <button id="boton-cliente" class="ing-boton" type="submit">Continuar</button>
+          </form>
+          <!-- Cada enlace abre el chat con su propio saludo de Juno (el parámetro "motivo" lo lee static/js/chat.js). -->
+          <p class="ing-nota">¿Primera vez? <a class="ing-registro" href="/chat?motivo=registro" target="_top">Regístrate con Juno →</a></p>
+        </section>
+
+        <!-- Lado de equipo (a la derecha) -->
+        <section id="panel-equipo" class="ing-form ing-equipo" aria-labelledby="titulo-equipo">
+          <div class="ing-icono ing-foto">
+            <img src="/static/img/juno_equipo.png" alt="">
+          </div>
+          <h2 id="titulo-equipo">Portal de equipo</h2>
+          <p class="ing-sub">Ingreso exclusivo del personal de H&amp;Devs.</p>
+
+          <form id="formulario-ingreso" autocomplete="on">
+            <div class="ing-campo">
+              <label for="usuario">Usuario</label>
+              <div class="ing-caja">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/></svg>
+                <input id="usuario" name="usuario" type="text" placeholder="tu.usuario" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+              </div>
+            </div>
+            <div class="ing-campo">
+              <label for="clave">Contraseña</label>
+              <div class="ing-caja">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                <input id="clave" name="clave" type="password" placeholder="Tu contraseña" autocomplete="current-password" required>
+                <button type="button" class="ing-ojo" data-mostrar="clave" aria-label="Mostrar contraseña" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+            <!-- Aquí aparece el mensaje de error; "role=alert" hace que los lectores de pantalla lo anuncien. -->
+            <p id="error" class="ing-error" role="alert" hidden></p>
+            <button id="boton-ingresar" class="ing-boton" type="submit">Ingresar</button>
+          </form>
+          <p class="ing-nota">¿Olvidaste tu contraseña? <strong>Pide al administrador que la restablezca.</strong></p>
+
+          <!-- Solo en celulares: invitación para los clientes (en pantallas anchas es el panel azul). -->
+          <button type="button" class="ing-juno-movil" data-ir="cliente">
+            <span class="ing-avatar"><img src="/static/img/juno.png" alt=""></span>
+            <span><strong>¿Eres cliente?</strong><small>Reconócete con tu documento y sigue con Juno.</small></span>
+          </button>
+        </section>
+
+        <!-- Panel deslizante (solo en pantallas anchas): se mueve de un lado al otro y cambia de color y de mensaje. -->
+        <div class="ing-over">
+          <div class="ing-cap azul">
+            <div class="ing-avatar grande"><img src="/static/img/juno.png" alt="Juno"></div>
+            <p class="ing-over-titulo">¿Eres cliente?</p>
+            <p class="ing-over-texto">Juno te atiende: consulta servicios, agenda tu cita y aparta productos.</p>
+            <button type="button" class="ing-over-boton" data-ir="cliente">Soy cliente</button>
+          </div>
+          <div class="ing-cap vio">
+            <div class="ing-avatar grande"><img src="/static/img/juno_equipo.png" alt="Juno del equipo"></div>
+            <p class="ing-over-titulo">¿Eres del equipo?</p>
+            <p class="ing-over-texto">Ingresa con tu usuario y contraseña al portal interno de H&amp;Devs.</p>
+            <button type="button" class="ing-over-boton" data-ir="equipo">Portal de equipo</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Para quien solo quiere mirar: entra al chat sin identificarse. Va fuera de la tarjeta para no amontonarla. -->
+      <a class="ing-mirar" href="/chat?motivo=mirar" target="_top">
+        <span class="ing-mirar-icono">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        </span>
+        <span>¿Solo quieres mirar? <strong>Ver servicios y productos →</strong></span>
+      </a>
+    </main>
+  </div>
+
+  <script type="module" src="/static/js/acceso/interfaz.js"></script>
+  <script type="module" src="/static/js/acceso/cliente.js"></script>
+  <script type="module" src="/static/js/panel/ingresar.js"></script>
+</body>
+</html>

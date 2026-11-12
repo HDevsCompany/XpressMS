@@ -1,0 +1,105 @@
+<!-- Encabezado y menú lateral: lo comparten el lienzo (templates/lienzo.html) y «Mi perfil y datos» (templates/perfil.html).
+     El servidor lo mete en cada página en lugar de la marca «ENCABEZADO_MENU». Lo maneja static/js/menu.js. -->
+  <!-- ===== Encabezado ===== -->
+  <header class="lz-cab">
+    <div class="lz-cab-izq">
+      <button id="boton-menu" class="lz-hbg" type="button" aria-label="Abrir el menú" aria-expanded="false" aria-controls="menu">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <a class="lz-logo" href="/" aria-label="XpressMS by H&amp;Devs, inicio">
+        <b>XpressMS</b>
+        <small>by H&amp;Devs</small>
+      </a>
+    </div>
+    <div class="lz-cab-der">
+      <!-- Visitante: este botón abre la ventana de ingreso. Con el menú abierto queda oculto (el menú trae el suyo). -->
+      <button id="boton-ingresar" class="lz-ingresar" type="button">Iniciar sesión</button>
+      <!-- Cliente reconocido: el avatar con su inicial abre y cierra el menú (igual que el ☰). Queda por encima del velo. -->
+      <button id="boton-avatar" class="lz-avatar" type="button" aria-label="Abrir el menú de tu cuenta" aria-expanded="false" aria-controls="menu">
+        <span id="avatar-inicial">?</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== Menú lateral ===== -->
+  <div id="velo-menu" class="lz-velo"></div>
+  <aside id="menu" class="lz-menu" aria-label="Menú" inert>
+    <div class="lz-menu-cab">
+      <a class="lz-logo" href="/"><b>XpressMS</b><small>by H&amp;Devs</small></a>
+      <button id="cerrar-menu" class="lz-hbg" type="button" aria-label="Cerrar el menú">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <button id="menu-nueva" class="lz-nueva" type="button">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Nueva conversación
+    </button>
+
+    <nav class="lz-menu-cuerpo" aria-label="Acciones">
+      <!-- Cada acción con data-mensaje envía un mensaje al chat y Juno responde: la página no hace nada por su cuenta. Las que son enlaces abren una página. -->
+      <p class="lz-rotulo">ACCIONES RÁPIDAS</p>
+      <!-- El catálogo es una página aparte (como «Mi perfil y datos»): no toca la conversación. Allí Juno vive como una burbuja flotante. -->
+      <a class="lz-item" id="menu-catalogo" href="/catalogo">
+        <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 13H7zM9 7a3 3 0 016 0"/></svg>
+        Ver catálogo de productos
+        <span class="lz-tip"><i>ABRE LA TIENDA</i>Una página aparte, sin tocar tu chat</span>
+      </a>
+      <!-- Los servicios técnicos son una página aparte (como el catálogo): allí se pide un servicio o se agenda una cita de diagnóstico con Juno. -->
+      <a class="lz-item" id="menu-servicios" href="/servicios">
+        <svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.5 2.5-2.5-.5-.5-2.5z"/></svg>
+        Servicios técnicos / Agendar cita
+        <span class="lz-tip"><i>ABRE LA PÁGINA DE SERVICIOS</i>Pide un servicio o agenda un diagnóstico</span>
+      </a>
+      <button class="lz-item" type="button" data-mensaje="Quiero consultar el estado de mi reparación">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        Consultar estado de reparación
+        <span class="lz-tip"><i>ENVÍA AL CHAT</i>«Quiero consultar el estado de mi reparación»</span>
+      </button>
+
+      <!-- Solo para clientes reconocidos. «Mi Dashboard» llega en una etapa siguiente:
+           estas dos entradas le piden a Juno lo que ya sabe mostrar (órdenes y apartados). -->
+      <div class="lz-solo-cliente">
+        <p class="lz-rotulo">MI CUENTA</p>
+        <button class="lz-item" type="button" data-mensaje="Ver mi orden">
+          <svg viewBox="0 0 24 24"><path d="M8 3h8l3 3v15H5V3z"/><path d="M9 11h6M9 15h6"/></svg>
+          Mis reparaciones activas
+          <span class="lz-tip"><i>ENVÍA AL CHAT</i>«Ver mi orden»</span>
+        </button>
+        <button class="lz-item" type="button" data-mensaje="Ver mis apartados">
+          <svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>
+          Historial de compras
+          <span class="lz-tip"><i>ENVÍA AL CHAT</i>«Ver mis apartados»</span>
+        </button>
+        <!-- «Mi perfil y datos» es una página: solo muestra; lo que cambia algo se lo pide a Juno. -->
+        <a class="lz-item" id="menu-perfil" href="/perfil">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Mi perfil y datos
+        </a>
+      </div>
+    </nav>
+
+    <div class="lz-menu-pie">
+      <!-- Visitante: invitación a iniciar sesión o registrarse (abre la misma ventana de ingreso del encabezado). -->
+      <div class="lz-solo-visitante lz-cta">
+        <div class="lz-cta-fila">
+          <img src="/static/img/juno.png" alt="">
+          <b>Con tu cuenta, Juno te ayuda más</b>
+        </div>
+        <p>Guarda tus conversaciones y mira tus reparaciones, apartados y compras en un solo lugar.</p>
+        <button id="menu-ingresar" class="lz-cta-boton" type="button">Iniciar sesión / Registrarme</button>
+      </div>
+      <!-- Cliente: su nombre y el botón para cerrar sesión. -->
+      <div class="lz-solo-cliente lz-usuario">
+        <span class="lz-usuario-av" id="menu-inicial">?</span>
+        <div><b id="menu-nombre">Cliente</b><small>Cliente</small></div>
+        <button id="menu-salir" class="lz-salir" type="button" aria-label="Cerrar sesión" title="Cerrar sesión">
+          <svg viewBox="0 0 24 24"><path d="M9 4H5v16h4M16 8l4 4-4 4M20 12H9"/></svg>
+        </button>
+      </div>
+      <a class="lz-equipo" href="/ingresar">
+        <svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+        Portal del equipo
+      </a>
+    </div>
+  </aside>

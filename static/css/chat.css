@@ -42,6 +42,16 @@
   border-bottom-left-radius: 4px;
 }
 
+.burbuja.agente .rs {
+  font-weight: 700;
+  color: var(--azul-oscuro);
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 6px;
+  padding: 1px 5px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
 .burbuja.persona {
   background: var(--azul);
   color: #fff;
@@ -176,4 +186,72 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ---------- Mensajes del agente: su icono a la izquierda y su nombre arriba ---------- */
+.saludo {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  align-self: stretch;
+  animation: entrar 0.3s ease;
+}
+
+.avatar {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #e0e7ff, #ffffff);
+  border: 2px solid #c7d2fe;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.avatar img {
+  width: 90%;
+  height: auto;
+  display: block;
+}
+
+/* El saludo de presentación (el primer mensaje) lleva el icono más grande. */
+.saludo.grande .avatar {
+  width: 56px;
+  height: 56px;
+}
+
+.saludo .burbuja {
+  max-width: calc(100% - 56px);
+  animation: none; /* la fila ya entra con su animación */
+}
+
+.saludo.grande .burbuja {
+  max-width: calc(100% - 68px);
+}
+
+.burbuja .nombre-agente {
+  display: block;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--azul-oscuro);
+  margin-bottom: 3px;
+}
+
+/* Tarjetas y botones que acompañan a un mensaje del agente: alineados con su burbuja (no con su icono). */
+.con-sangria {
+  margin-left: var(--sangria-actual, 56px);
+  max-width: calc(100% - var(--sangria-actual, 56px));
+}
+
+/* ---------- Dentro de la burbuja de Juno (página principal) ---------- */
+/* La burbuja ya tiene su propia cabecera con el nombre de Juno: aquí solo queda la conversación. */
+.incrustado .chat-cabecera {
+  display: none;
+}
+
+.incrustado .chat {
+  max-width: none;
+  box-shadow: none;
 }

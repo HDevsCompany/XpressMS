@@ -15,7 +15,7 @@ update Agente.Conversaciones
 delete from Acceso.Clientes where ClientesNumeroDocumento = '72322732';
 
 -- ---------------------------------------------------------------------------------------------
--- Opción B: dejar vacías las tres tablas (todos los clientes, conversaciones y mensajes).
+-- Opción B: dejar vacías las cuatro tablas (todos los clientes, conversaciones, mensajes y códigos de verificación).
 -- Se listan juntas porque están relacionadas entre sí.
 -- ---------------------------------------------------------------------------------------------
--- truncate Agente.Mensajes, Agente.Conversaciones, Acceso.Clientes;
+-- truncate Agente.Mensajes, Acceso.VerificacionesTelefono, Agente.Conversaciones, Acceso.Clientes;

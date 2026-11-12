@@ -1,0 +1,227 @@
+/* panel.css: la página de ingreso del personal y el panel interno.
+   Usa las variables de color de base.css, así todo el sitio mantiene el mismo estilo. */
+
+/* ---------- Página de ingreso ---------- */
+.pagina-centrada {
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 16px;
+}
+
+.acceso {
+  width: 100%;
+  max-width: 380px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 28px 24px 22px;
+}
+
+.acceso h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--azul);
+}
+
+.acceso-subtitulo {
+  margin: 4px 0 20px;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.enlace-volver {
+  display: block;
+  margin-top: 18px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+
+/* ---------- Formularios ---------- */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.campo input {
+  font: inherit;
+  font-weight: 400;
+  padding: 10px 12px;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  background: var(--superficie);
+  color: var(--texto);
+  transition: border-color var(--transicion), box-shadow var(--transicion);
+}
+
+.campo input:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px var(--azul-claro);
+}
+
+.campo small {
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+.boton-principal {
+  font: inherit;
+  font-weight: 600;
+  background: var(--azul);
+  color: #fff;
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 16px;
+  cursor: pointer;
+  transition: background var(--transicion);
+}
+
+.boton-principal:hover:not(:disabled) {
+  background: var(--azul-oscuro);
+}
+
+.boton-principal:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.mensaje-error {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: var(--rojo);
+  font-size: 0.85rem;
+}
+
+.mensaje-exito {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--verde-claro);
+  color: var(--verde);
+  font-size: 0.85rem;
+}
+
+/* ---------- Panel interno ---------- */
+.pagina-panel {
+  flex-direction: column;
+  justify-content: flex-start; /* base.css centra el body; aquí el contenido empieza arriba */
+  align-items: stretch;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.panel-cabecera {
+  background: var(--azul);
+  color: #fff;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-cabecera h1 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.panel-cabecera p {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.panel-contenido {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel-bloque {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 18px 20px;
+}
+
+.panel-bloque h2 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+}
+
+.panel-bloque > p {
+  margin: 0 0 14px;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.rol {
+  background: var(--azul-muy-claro);
+  color: var(--azul-oscuro);
+  border: 1px solid var(--azul-claro);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.aviso {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.aviso h2 {
+  color: #92400e;
+}
+
+/* ---------- Apartados del inicio ---------- */
+.apartado {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--texto);
+  transition: border-color var(--transicion), background var(--transicion);
+}
+
+.apartado:hover {
+  border-color: var(--azul);
+  background: var(--azul-muy-claro);
+}
+
+.apartado span {
+  font-size: 0.88rem;
+  color: var(--texto-suave);
+  line-height: 1.4;
+}

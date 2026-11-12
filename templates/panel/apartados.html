@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!-- Apartados: productos que los clientes separaron desde el asistente (Administrador y Vendedor). -->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Apartados · H&amp;Devs</title>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/panel.css">
+  <link rel="stylesheet" href="/static/css/gestion.css">
+  <link rel="stylesheet" href="/static/css/ordenes.css">
+  <link rel="stylesheet" href="/static/css/catalogo.css">
+</head>
+<body class="pagina-panel">
+  <header class="panel-cabecera">
+    <div>
+      <h1>H&amp;Devs · Apartados</h1>
+      <p id="cabecera-usuario">&nbsp;</p>
+    </div>
+    <div class="cabecera-acciones">
+      <a class="boton-cabecera" href="/panel">Inicio</a>
+      <button id="boton-salir" class="boton-cabecera" type="button">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main class="panel-contenido panel-ancho">
+    <!-- Las pestañas se arman desde pagina.js; aquí solo está el contenedor. -->
+    <div id="pestanas" class="pestanas" role="tablist"></div>
+
+    <p id="aviso-error" class="mensaje-error" role="alert" hidden></p>
+    <section id="vista-apartados" role="tabpanel"></section>
+  </main>
+
+  <dialog id="dialogo" class="dialogo"></dialog>
+
+  <script type="module" src="/static/js/panel/apartados/pagina.js"></script>
+</body>
+</html>

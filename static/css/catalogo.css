@@ -1,0 +1,38 @@
+/* catalogo.css: las pantallas /panel/productos y /panel/apartados.
+   Reutiliza fila, etiqueta, pestana y dialogo de gestion.css (y el código en letra de máquina de ordenes.css). */
+
+/* Filtro de categoría sobre la lista de productos. */
+.filtro-categoria {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.filtro-categoria select {
+  font: inherit;
+  font-weight: 400;
+  padding: 8px 12px;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  background: var(--superficie);
+  color: var(--texto);
+  min-width: 0;
+}
+
+/* En apartados, los botones de la fila van uno junto al otro y más compactos. */
+.fila-orden .fila-acciones {
+  gap: 8px;
+}
+
+.boton-corto {
+  width: auto;
+  padding: 8px 14px;
+  font-size: 0.88rem;
+}
+
+.campo select {
+  min-width: 0;
+}

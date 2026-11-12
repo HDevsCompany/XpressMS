@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<!-- «Mi perfil y datos» (/perfil): el pase del cliente, sus datos, sus direcciones y las personas autorizadas a recoger.
+     Regla de la plataforma: esta página solo MUESTRA. Todo lo que cambia algo (corregir un dato, añadir una dirección, autorizar a
+     alguien...) se lo pide a Juno: los botones «… con Juno» llevan la petición al lienzo, donde Juno la ejecuta.
+     El encabezado y el menú lateral son los mismos del lienzo (templates/parciales/encabezado_menu.html).
+     Estilos: static/css/perfil.css (y lienzo.css para el encabezado y el menú). Script: static/js/perfil.js. -->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mi perfil y datos · XpressMS</title>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/lienzo.css">
+  <link rel="stylesheet" href="/static/css/perfil.css">
+</head>
+<body class="lz pf" data-vista="pagina" data-sesion="visitante">
+
+  <!--ENCABEZADO_MENU-->
+
+  <!-- ===== Página ===== -->
+  <main class="pf-main" id="pf-main">
+    <div class="pf-ancho">
+
+      <!-- Mientras llegan los datos. -->
+      <p class="pf-estado-carga" id="pf-cargando">Cargando tu perfil…</p>
+
+      <!-- Quien no es un cliente reconocido ve esta invitación. -->
+      <section class="pf-aviso" id="pf-visitante" hidden>
+        <img src="/static/img/juno.png" alt="">
+        <h1>Tu perfil está esperando</h1>
+        <p>Inicia sesión para ver tu pase, tus datos, tus direcciones de entrega y las personas autorizadas a recoger tus equipos.</p>
+        <div class="pf-aviso-botones">
+          <button type="button" class="pf-boton pf-boton-azul" id="pf-iniciar">Iniciar sesión</button>
+          <a class="pf-boton" href="/chat?motivo=registro">Registrarme con Juno</a>
+        </div>
+      </section>
+
+      <!-- Si no se pudo cargar. -->
+      <section class="pf-aviso" id="pf-error" hidden>
+        <img src="/static/img/juno.png" alt="">
+        <h1>No pude cargar tu perfil</h1>
+        <p>Revisa tu conexión e inténtalo de nuevo.</p>
+        <div class="pf-aviso-botones">
+          <button type="button" class="pf-boton pf-boton-azul" id="pf-reintentar">Reintentar</button>
+        </div>
+      </section>
+
+      <!-- El perfil: lo llena static/js/perfil.js. -->
+      <div id="pf-contenido" hidden>
+        <header class="pf-encabezado">
+          <h1>Mi perfil y datos</h1>
+          <p>Tu identidad y tus datos en un solo lugar. Para cambiar algo, díselo a Juno.</p>
+        </header>
+
+        <div class="pf-rejilla">
+          <div class="pf-columna" id="pf-izquierda"></div>
+          <div class="pf-columna" id="pf-derecha"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Pídele algo a Juno: lo escrito aquí se envía en el lienzo. -->
+  <form class="pf-barra" id="pf-barra" autocomplete="off" hidden>
+    <input id="pf-barra-texto" type="text" maxlength="1000" required
+           placeholder="Pídele algo a Juno: cambiar mi celular, corregir un dato, pedir mis datos..."
+           aria-label="Pídele algo a Juno">
+    <button type="submit" aria-label="Enviar a Juno">
+      <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+  </form>
+
+  <script type="module" src="/static/js/perfil.js"></script>
+</body>
+</html>

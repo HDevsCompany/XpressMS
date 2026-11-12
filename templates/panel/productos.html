@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<!-- Productos y categorías: el catálogo que el asistente muestra a los clientes (Administrador y Vendedor). -->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Productos y categorías · H&amp;Devs</title>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/panel.css">
+  <link rel="stylesheet" href="/static/css/gestion.css">
+  <link rel="stylesheet" href="/static/css/catalogo.css">
+</head>
+<body class="pagina-panel">
+  <header class="panel-cabecera">
+    <div>
+      <h1>H&amp;Devs · Productos y categorías</h1>
+      <p id="cabecera-usuario">&nbsp;</p>
+    </div>
+    <div class="cabecera-acciones">
+      <a class="boton-cabecera" href="/panel">Inicio</a>
+      <button id="boton-salir" class="boton-cabecera" type="button">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main class="panel-contenido panel-ancho">
+    <!-- Dos pestañas: la lista de productos y la lista de categorías. -->
+    <div class="pestanas" role="tablist">
+      <button id="pestana-productos" class="pestana" type="button" role="tab" aria-selected="true">Productos</button>
+      <button id="pestana-categorias" class="pestana" type="button" role="tab" aria-selected="false">Categorías</button>
+    </div>
+
+    <p id="aviso-error" class="mensaje-error" role="alert" hidden></p>
+    <section id="vista-productos" role="tabpanel" aria-labelledby="pestana-productos"></section>
+    <section id="vista-categorias" role="tabpanel" aria-labelledby="pestana-categorias" hidden></section>
+  </main>
+
+  <!-- Ventana emergente reutilizable: los formularios y las confirmaciones se dibujan aquí dentro. -->
+  <dialog id="dialogo" class="dialogo"></dialog>
+
+  <script type="module" src="/static/js/panel/productos/pagina.js"></script>
+</body>
+</html>

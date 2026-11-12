@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<!-- Inicio del panel interno de H&Devs. Solo se entrega con sesión válida (lo decide el backend). -->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Panel · H&amp;Devs</title>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/panel.css">
+</head>
+<body class="pagina-panel">
+  <header class="panel-cabecera">
+    <div>
+      <h1>H&amp;Devs · Panel interno</h1>
+      <p id="cabecera-usuario">&nbsp;</p>
+    </div>
+    <button id="boton-salir" class="boton-cabecera" type="button">Cerrar sesión</button>
+  </header>
+
+  <!-- Los scripts dibujan aquí el contenido según la persona y sus roles. -->
+  <main id="contenido" class="panel-contenido" aria-live="polite"></main>
+
+  <script type="module" src="/static/js/panel/inicio.js"></script>
+</body>
+</html>

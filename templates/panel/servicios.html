@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<!-- Servicios y tipos de equipo: lo que el asistente muestra a los clientes se administra aquí (solo Administrador).
+     Los servicios se crean, editan y eliminan hablando con Juno; la ficha se va armando a la izquierda. -->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Servicios y equipos · H&amp;Devs</title>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/panel.css">
+  <link rel="stylesheet" href="/static/css/gestion.css">
+  <link rel="stylesheet" href="/static/css/tienda.css">
+  <link rel="stylesheet" href="/static/css/servicios.css">
+  <link rel="stylesheet" href="/static/css/panel_servicios.css">
+</head>
+<body class="pagina-panel">
+  <header class="panel-cabecera">
+    <div>
+      <h1>H&amp;Devs · Servicios y equipos</h1>
+      <p id="cabecera-usuario">&nbsp;</p>
+    </div>
+    <div class="cabecera-acciones">
+      <a class="boton-cabecera" href="/panel">Inicio</a>
+      <button id="boton-salir" class="boton-cabecera" type="button">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main class="panel-contenido panel-ancho">
+    <!-- Dos pestañas: la lista de servicios (con Juno) y la lista de tipos de equipo. -->
+    <div class="pestanas" role="tablist">
+      <button id="pestana-servicios" class="pestana" type="button" role="tab" aria-selected="true">Servicios</button>
+      <button id="pestana-equipos" class="pestana" type="button" role="tab" aria-selected="false">Tipos de equipo</button>
+    </div>
+
+    <p id="aviso-error" class="mensaje-error" role="alert" hidden></p>
+
+    <section id="vista-servicios" role="tabpanel" aria-labelledby="pestana-servicios">
+      <div class="pj-grid">
+        <div class="pj-izq">
+          <!-- La ficha en construcción (la dibuja borrador.js) y, debajo, la lista de servicios. -->
+          <div id="zona-lista"></div>
+        </div>
+
+        <!-- Juno: a la derecha en pantallas grandes; en el teléfono se abre desde el botón redondo. -->
+        <aside id="juno" class="pj-juno" aria-label="Juno, asistente del panel">
+          <div class="pj-jc">
+            <img src="/static/img/juno.png" alt="">
+            <div><b>Juno</b><small><i></i>Asistente del panel · en línea</small></div>
+            <span class="pj-rol">ADMINISTRADOR</span>
+            <button id="juno-cerrar" class="pj-cerrar" type="button" aria-label="Cerrar a Juno"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          </div>
+          <div class="pj-msgs" aria-live="polite"></div>
+          <form class="pj-caja" autocomplete="off">
+            <input type="text" maxlength="600" placeholder="Describe el servicio que quieres agregar…" aria-label="Escríbele a Juno">
+            <button type="submit" aria-label="Enviar"></button>
+          </form>
+        </aside>
+        <button id="juno-fab" class="pj-fab" type="button" aria-label="Hablar con Juno"><img src="/static/img/juno.png" alt=""></button>
+      </div>
+    </section>
+
+    <section id="vista-equipos" role="tabpanel" aria-labelledby="pestana-equipos" hidden></section>
+  </main>
+
+  <!-- Ventana emergente reutilizable: las confirmaciones de los tipos de equipo se dibujan aquí dentro. -->
+  <dialog id="dialogo" class="dialogo"></dialog>
+
+  <script type="module" src="/static/js/panel/servicios/pagina.js"></script>
+</body>
+</html>

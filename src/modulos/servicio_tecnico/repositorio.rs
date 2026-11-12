@@ -12,7 +12,8 @@ use super::modelo::{Servicio, TipoEquipo};
 pub async fn listar_servicios(pool: &PgPool) -> Result<Vec<Servicio>, sqlx::Error> {
     sqlx::query_as::<_, Servicio>(
         "select ServiciosCodigo as codigo, ServiciosNombre as nombre, ServiciosDescripcion as descripcion, \
-                ServiciosPrecioBase::text as precio_base, ServiciosTiempoEstimado as tiempo_estimado \
+                ServiciosPrecioBase::text as precio_base, ServiciosTiempoEstimado as tiempo_estimado, \
+                ServiciosAvisoPrecio as aviso_precio \
          from ServicioTecnico.Servicios \
          where ServiciosEstado = 'A' \
          order by ServiciosNombre",
@@ -28,7 +29,8 @@ pub async fn obtener_servicio(
 ) -> Result<Option<Servicio>, sqlx::Error> {
     sqlx::query_as::<_, Servicio>(
         "select ServiciosCodigo as codigo, ServiciosNombre as nombre, ServiciosDescripcion as descripcion, \
-                ServiciosPrecioBase::text as precio_base, ServiciosTiempoEstimado as tiempo_estimado \
+                ServiciosPrecioBase::text as precio_base, ServiciosTiempoEstimado as tiempo_estimado, \
+                ServiciosAvisoPrecio as aviso_precio \
          from ServicioTecnico.Servicios \
          where ServiciosCodigo = $1 and ServiciosEstado = 'A'",
     )

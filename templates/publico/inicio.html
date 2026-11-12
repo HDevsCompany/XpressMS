@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<!-- Página principal de XpressMS (/): lo que ve cualquier visitante. Muestra categorías, productos destacados y servicios
+     (los datos los pide static/js/publico/inicio.js a /publico/inicio) y a Juno flotando en una esquina.
+       - «Iniciar sesión» abre la tarjeta de ingreso (/ingreso) dentro de una ventana: static/js/publico/ingreso.js.
+       - Juno es el chat (/chat) dentro de una burbuja: static/js/publico/juno.js.
+       - Cuando Juno pide registrarse, una guía señala dónde pulsar: static/js/publico/guia.js.
+     Los estilos están en static/css/publico.css. -->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XpressMS by H&amp;Devs</title>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/publico.css">
+</head>
+<body class="pub">
+  <header class="pub-barra">
+    <a class="pub-logo" href="/">
+      <b>XpressMS</b>
+      <small>by H&amp;Devs · Hardware and Development</small>
+    </a>
+    <nav class="pub-enlaces" aria-label="Secciones">
+      <a href="#inicio" class="activo">Inicio</a>
+      <a href="#catalogo">Catálogo</a>
+      <a href="#servicios">Servicios</a>
+    </nav>
+    <div class="pub-der">
+      <!-- Visitante: un solo botón. static/js/publico/inicio.js lo cambia por «Continuar con Juno» si ya hay sesión. -->
+      <button id="boton-ingresar" class="pub-boton-ingreso" type="button">Iniciar sesión</button>
+      <div id="sesion-activa" class="pub-sesion" hidden>
+        <a class="pub-boton-ingreso" href="/chat">Continuar con Juno</a>
+        <button id="boton-salir" class="pub-enlace-suave" type="button">Cerrar sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="inicio" class="pub-pagina">
+      <div class="pub-heroe">
+        <div>
+          <h1>Tecnología y servicio técnico en un solo lugar</h1>
+          <p>Laptops, componentes, periféricos y reparación de equipos. Mira todo con calma y, si tienes dudas, pregúntale a Juno: te responde al instante.</p>
+          <div class="pub-heroe-acciones">
+            <a class="pub-boton" href="#catalogo">Ver catálogo</a>
+            <button class="pub-boton-contorno" type="button" data-abrir-juno>Solicitar servicio técnico</button>
+          </div>
+        </div>
+        <div class="pub-heroe-arte" aria-hidden="true">
+          <img src="/static/img/juno.png" alt="">
+          <span class="pub-etiqueta e1">Reparación</span>
+          <span class="pub-etiqueta e2">Garantía</span>
+          <span class="pub-etiqueta e3">Atención al instante</span>
+        </div>
+      </div>
+    </section>
+
+    <div id="catalogo" class="pub-pagina pub-bloque">
+      <section id="seccion-categorias" hidden>
+        <h2>Categorías</h2>
+        <div id="lista-categorias" class="pub-categorias"></div>
+      </section>
+
+      <section id="seccion-destacados" hidden>
+        <h2>Productos destacados</h2>
+        <div id="lista-destacados" class="pub-productos"></div>
+      </section>
+    </div>
+
+    <section id="servicios" class="pub-pagina pub-bloque" hidden>
+      <h2>Servicios</h2>
+      <div id="lista-servicios" class="pub-servicios"></div>
+    </section>
+
+    <!-- Si la base todavía no tiene nada que mostrar (o falla la carga), se avisa en vez de dejar la página vacía. -->
+    <p id="aviso-vacio" class="pub-pagina pub-vacio" hidden>Estamos preparando el catálogo. Mientras tanto, Juno puede contarte qué servicios ofrecemos.</p>
+  </main>
+
+  <footer class="pub-pie">
+    <span>H&amp;Devs · Hardware and Development · Trujillo</span>
+    <a href="/ingresar">Portal del equipo</a>
+  </footer>
+
+  <!-- Juno flotante: el aviso (globo), el botón redondo y el panel con la conversación. -->
+  <div id="juno" class="juno">
+    <div id="juno-globo" class="juno-globo" role="status" hidden>
+      <button id="juno-globo-cerrar" class="juno-globo-x" type="button" aria-label="Cerrar aviso">×</button>
+      <b>¿Qué necesitas hoy?</b>
+      Puedo mostrarte el catálogo, explicarte un servicio o ayudarte a pedir una cita.
+    </div>
+    <button id="juno-boton" class="juno-boton" type="button" aria-label="Hablar con Juno" aria-expanded="false" aria-controls="juno-panel">
+      <img src="/static/img/juno.png" alt="">
+    </button>
+    <section id="juno-panel" class="juno-panel" aria-label="Chat con Juno" hidden>
+      <header class="juno-cab">
+        <img src="/static/img/juno.png" alt="">
+        <div><b>Juno</b><small>En línea · tu asistente</small></div>
+        <button id="juno-cerrar" class="juno-cerrar" type="button" aria-label="Cerrar el chat">×</button>
+      </header>
+      <!-- El chat completo (/chat) se carga aquí la primera vez que se abre la burbuja. -->
+      <iframe id="juno-marco" title="Conversación con Juno"></iframe>
+    </section>
+  </div>
+
+  <script type="module" src="/static/js/publico/inicio.js"></script>
+</body>
+</html>

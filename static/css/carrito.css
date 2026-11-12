@@ -1,0 +1,975 @@
+/* carrito.css: lo que se ve del carrito de la tienda: el botón «Carrito» del encabezado, el cajón «Mi carrito», la pantalla
+   «¿Cómo quieres completar tu pedido?» y la confirmación «¡Pedido apartado!». Lo dibuja static/js/componentes/carrito.js.
+   Todas las clases empiezan con «cr-». */
+
+/* ----- El botón del encabezado ----- */
+/* En la tienda, la zona derecha del encabezado pone en fila el botón «Carrito» y el de sesión. */
+body.tn .lz-cab-der {
+  display: flex;
+  align-items: center;
+}
+
+.cr-boton {
+  height: 42px;
+  border-radius: 999px;
+  border: 1.5px solid #cfe0fb;
+  background: #fff;
+  color: var(--azul);
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px 0 14px;
+  margin-right: 10px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.1);
+  transition: background var(--transicion), border-color var(--transicion);
+}
+
+.cr-boton:hover {
+  background: var(--azul-muy-claro);
+  border-color: var(--azul);
+}
+
+.cr-boton svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+}
+
+.cr-boton b {
+  min-width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background: #cbd5e1;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 0.78rem;
+  padding: 0 6px;
+  transition: background var(--transicion);
+}
+
+.cr-boton.lleno b {
+  background: var(--azul);
+}
+
+.cr-boton.salto b {
+  animation: cr-salto 0.45s ease;
+}
+
+@keyframes cr-salto {
+  35% { transform: scale(1.35); }
+}
+
+/* Con el menú lateral abierto, el velo del menú cubre el encabezado: el botón se oculta igual que «Iniciar sesión». */
+.lz-menu-abierto .cr-boton {
+  visibility: hidden;
+}
+
+/* ----- Capas ----- */
+body.cr-abierto .tn-juno {
+  z-index: 8;
+}
+
+.cr-velo {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(15, 23, 42, 0.42);
+  backdrop-filter: blur(3px);
+  animation: fh-velo 0.2s ease both;
+}
+
+.cr-velo.saliendo,
+.cr.saliendo,
+.cr-ck.saliendo {
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+
+.cr.ocupado,
+.cr-ck.ocupado {
+  cursor: progress;
+}
+
+.cr.ocupado .cr-lst,
+.cr.ocupado .cr-cf,
+.cr-ck.ocupado .cr-l {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ----- El cajón «Mi carrito» ----- */
+.cr {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 61;
+  width: min(450px, 100vw);
+  background: #fff;
+  border-radius: 28px 0 0 28px;
+  box-shadow: -30px 0 80px rgba(15, 23, 42, 0.3);
+  display: flex;
+  flex-direction: column;
+  color: var(--texto);
+  animation: cr-entra 0.26s ease both;
+}
+
+@keyframes cr-entra {
+  from { transform: translateX(40px); opacity: 0; }
+}
+
+.cr-ch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 26px 12px;
+}
+
+.cr-ch h2 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.cr-ch h2 small {
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.cr-x {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 0;
+  background: #f1f5f9;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  transition: background var(--transicion);
+}
+
+.cr-x:hover {
+  background: #e2e8f0;
+}
+
+.cr-x svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--texto);
+  stroke-width: 2.4;
+}
+
+.cr-jn {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 0 26px 8px;
+  padding: 10px 12px;
+  background: #f3f7ff;
+  border-radius: 14px;
+  font-size: 0.8rem;
+  color: #475569;
+  line-height: 1.35;
+}
+
+.cr-jn img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex: none;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(29, 78, 216, 0.25);
+  object-fit: cover;
+}
+
+.cr-lst {
+  flex: 1;
+  overflow: auto;
+  padding: 6px 26px;
+}
+
+.cr-it {
+  display: grid;
+  grid-template-columns: 76px 1fr auto;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid #eef2f7;
+  align-items: start;
+}
+
+.cr-it-im,
+.cr-rs-im {
+  position: relative;
+  overflow: hidden;
+}
+
+.cr-it-im {
+  width: 76px;
+  height: 76px;
+  border-radius: 16px;
+}
+
+.lz .cr-it-im .lz-prod-arte,
+.lz .cr-rs-im .lz-prod-arte {
+  position: absolute;
+  inset: auto;
+  left: 6%;
+  top: 8%;
+  width: 88%;
+  height: 84%;
+  stroke: none;
+  transition: none;
+}
+
+.cr-it-n {
+  font-size: 0.84rem;
+  line-height: 1.25;
+  display: block;
+}
+
+.cr-it-sp {
+  font-size: 0.72rem;
+  color: var(--texto-suave);
+  margin: 3px 0 8px;
+  display: block;
+  line-height: 1.3;
+}
+
+.cr-it-c {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.cr-qty {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid #dbe4f3;
+  border-radius: 999px;
+  height: 32px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.cr-qty button {
+  width: 30px;
+  height: 100%;
+  border: 0;
+  background: none;
+  color: var(--azul);
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 0;
+}
+
+.cr-qty button:hover:not(:disabled) {
+  background: var(--azul-muy-claro);
+}
+
+.cr-qty button:disabled {
+  color: #cbd5e1;
+  cursor: default;
+}
+
+.cr-qty i {
+  font-style: normal;
+  min-width: 22px;
+  text-align: center;
+}
+
+.cr-rm {
+  border: 0;
+  background: none;
+  font-size: 0.74rem;
+  color: #94a3b8;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.cr-rm:hover {
+  color: var(--rojo);
+}
+
+.cr-tope {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.7rem;
+  color: #b45309;
+  font-weight: 600;
+}
+
+.cr-it-pz {
+  text-align: right;
+}
+
+.cr-it-pz b {
+  font-weight: 800;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.cr-it-pz small {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--texto-suave);
+  margin-top: 2px;
+}
+
+.cr-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 50px 20px;
+  color: var(--texto-suave);
+  font-size: 0.86rem;
+}
+
+.cr-vacio svg {
+  width: 44px;
+  height: 44px;
+  stroke: #94a3b8;
+  stroke-width: 1.5;
+}
+
+.cr-vacio b {
+  color: var(--texto);
+  font-size: 1.05rem;
+}
+
+.cr-cf {
+  padding: 16px 26px 24px;
+  border-top: 1px solid #eef2f7;
+  box-shadow: 0 -12px 22px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cr-tot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-weight: 600;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.cr-tot b {
+  font-size: 1.7rem;
+  color: var(--texto);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.cr-bn {
+  height: 48px;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.93rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 0 20px;
+  transition: background var(--transicion), transform var(--transicion);
+}
+
+.cr-bn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.cr-bn.p {
+  border: 0;
+  background: var(--azul);
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(29, 78, 216, 0.28);
+}
+
+.cr-bn.p:hover:not(:disabled) {
+  background: var(--azul-oscuro);
+}
+
+.cr-bn.p:disabled {
+  background: #eaf0fb;
+  color: var(--texto-suave);
+  box-shadow: none;
+  cursor: default;
+}
+
+.cr-bn.p img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  background: #fff;
+  object-fit: cover;
+}
+
+.cr-bn.s {
+  border: 2px solid #bfd0f7;
+  background: #fff;
+  color: var(--azul);
+}
+
+.cr-bn.s:hover {
+  background: var(--azul-muy-claro);
+}
+
+.cr-seg {
+  border: 0;
+  background: none;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--texto-suave);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* ----- «¿Cómo quieres completar tu pedido?» y «¡Pedido apartado!» ----- */
+.cr-ck {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 61;
+  width: min(980px, 94vw);
+  max-height: 94dvh;
+  background: #fff;
+  border-radius: 30px;
+  box-shadow: 0 40px 90px rgba(15, 23, 42, 0.35);
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  color: var(--texto);
+  overflow: hidden;
+  animation: fh-entra 0.22s ease both;
+}
+
+.cr-l {
+  padding: 30px 34px;
+  position: relative;
+  overflow-y: auto;
+}
+
+.cr-x-cierre {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+}
+
+.cr-r {
+  background: #f4f7fc;
+  padding: 30px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.cr-l h2 {
+  margin: 18px 0 4px;
+  font-size: 1.5rem;
+}
+
+.cr-sub {
+  margin: 0 0 18px !important;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.cr-pas {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.04em;
+  flex-wrap: wrap;
+  padding-right: 50px;
+}
+
+.cr-pas span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.cr-pas i {
+  font-style: normal;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #e2e8f0;
+  color: var(--texto-suave);
+  font-size: 0.72rem;
+}
+
+.cr-pas .ok i {
+  background: #16a34a;
+  color: #fff;
+}
+
+.cr-pas .on {
+  color: var(--azul);
+}
+
+.cr-pas .on i {
+  background: var(--azul);
+  color: #fff;
+}
+
+.cr-pas hr {
+  flex: 0 0 28px;
+  border: 0;
+  border-top: 2px solid #e2e8f0;
+  margin: 0;
+}
+
+.cr-op {
+  display: flex;
+  width: 100%;
+  gap: 16px;
+  align-items: flex-start;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  border: 2px solid var(--borde);
+  border-radius: 20px;
+  padding: 18px;
+  margin-bottom: 12px;
+  background: #fff;
+  position: relative;
+  cursor: pointer;
+  transition: border-color var(--transicion), box-shadow var(--transicion), background var(--transicion);
+}
+
+.cr-op:hover {
+  border-color: #bfd0f7;
+}
+
+.cr-op.on {
+  border-color: var(--azul);
+  background: #f5f8ff;
+  box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.1);
+}
+
+.cr-op-ic {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #eaf0fb;
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--azul);
+}
+
+.cr-op-ic svg {
+  width: 26px;
+  height: 26px;
+  stroke-width: 1.9;
+}
+
+.cr-op b {
+  font-size: 1.02rem;
+  display: block;
+  margin-bottom: 3px;
+  padding-right: 34px;
+}
+
+.cr-op b em {
+  font-style: normal;
+  margin-left: 8px;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: #fef3c7;
+  color: #92400e;
+  border-radius: 999px;
+  padding: 3px 8px;
+  vertical-align: middle;
+}
+
+.cr-op-t {
+  font-size: 0.84rem;
+  color: var(--texto-suave);
+  line-height: 1.4;
+}
+
+.cr-rd {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+}
+
+.cr-op.on .cr-rd {
+  border-color: var(--azul);
+  background: var(--azul);
+  box-shadow: inset 0 0 0 4px #f5f8ff;
+}
+
+.cr-nota {
+  font-size: 0.82rem;
+  color: #92400e;
+  background: #fffbeb;
+  border-radius: 12px;
+  padding: 0;
+  line-height: 1.4;
+}
+
+.cr-nota:not(:empty) {
+  padding: 10px 12px;
+  margin-bottom: 4px;
+}
+
+.cr-bs {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.cr-bs .s {
+  flex: 0.6;
+}
+
+.cr-bs .p {
+  flex: 1;
+}
+
+.cr-listo .cr-bs .s {
+  flex: 1;
+}
+
+.cr-resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cr-resumen-titulo {
+  font-size: 0.78rem;
+  letter-spacing: 0.07em;
+  color: var(--texto-suave);
+}
+
+.cr-rs {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.cr-rs-im {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+}
+
+.cr-tot-r {
+  margin-top: auto;
+  border-top: 1px solid #dbe4f3;
+  padding-top: 14px;
+}
+
+.cr-sm {
+  border: 1.5px solid #cfe0fb;
+  border-radius: 14px;
+  background: #fff;
+  padding: 10px 12px;
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.cr-centro {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.cr-centro h2 {
+  margin: 0 0 4px;
+}
+
+.cr-okc {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: #e8f7ee;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 14px;
+  box-shadow: 0 0 0 10px rgba(34, 197, 94, 0.1);
+}
+
+.cr-okc svg {
+  width: 46px;
+  height: 46px;
+  stroke: #16a34a;
+  stroke-width: 2.4;
+}
+
+.cr-cod {
+  border: 2px dashed #bfd0f7;
+  border-radius: 18px;
+  background: #f8faff;
+  padding: 14px;
+  text-align: center;
+  margin: 16px 0;
+  position: relative;
+}
+
+.cr-cod small {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--texto-suave);
+}
+
+.cr-cod b {
+  font-size: 2rem;
+  letter-spacing: 0.08em;
+  color: var(--azul);
+}
+
+.cr-copiar {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  border: 1.5px solid #cfe0fb;
+  background: #fff;
+  color: var(--azul);
+  font-weight: 700;
+  font-size: 0.74rem;
+  border-radius: 999px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+
+.cr-vence {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+  margin-top: 4px;
+}
+
+.cr-jb {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 6px 0;
+}
+
+.cr-jb img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex: none;
+  object-fit: cover;
+}
+
+.cr-jb div {
+  background: #eef4ff;
+  border-radius: 16px 16px 16px 4px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+/* El aviso corto bajo el chat de Juno: «1 producto · S/ 39.00 · Ver carrito». */
+.cr-mini {
+  border: 1.5px solid #cfe0fb;
+  border-radius: 14px;
+  background: #fff;
+  padding: 9px 12px;
+  margin: 6px 0 2px 38px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.cr-mini button {
+  border: 0;
+  background: none;
+  color: var(--azul);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 2px;
+}
+
+/* El aviso flotante (en celulares, cuando Juno añade algo con la ventana cerrada). */
+.cr-toast {
+  position: fixed;
+  left: 14px;
+  right: 14px;
+  bottom: 96px;
+  z-index: 40;
+  background: #0f172a;
+  color: #fff;
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.86rem;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.4);
+  animation: lz-subir 0.25s ease;
+}
+
+.cr-toast img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: none;
+}
+
+.cr-toast span {
+  flex: 1;
+  line-height: 1.3;
+}
+
+.cr-toast button {
+  border: 0;
+  background: none;
+  color: #93c5fd;
+  font-weight: 700;
+  font-size: 0.84rem;
+  cursor: pointer;
+  padding: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cr,
+  .cr-ck,
+  .cr-boton.salto b {
+    animation: none;
+  }
+}
+
+/* ----- Celulares: hojas que suben desde abajo ----- */
+@media (max-width: 820px) {
+  .cr-boton {
+    height: 38px;
+    padding: 0 6px 0 10px;
+    margin-right: 6px;
+    gap: 6px;
+  }
+
+  .cr-boton-texto {
+    display: none;
+  }
+
+  body.tn .lz-ingresar {
+    white-space: nowrap;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  .cr {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: 88dvh;
+    border-radius: 28px 28px 0 0;
+    animation: fh-sube 0.26s ease both;
+  }
+
+  .cr-ch,
+  .cr-lst,
+  .cr-cf {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .cr-jn {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  .cr-cf {
+    padding-bottom: calc(18px + env(safe-area-inset-bottom));
+  }
+
+  .cr-ck {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: none;
+    width: auto;
+    max-height: 92dvh;
+    border-radius: 28px 28px 0 0;
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+    animation: fh-sube 0.26s ease both;
+  }
+
+  .cr-l {
+    padding: 22px 18px 14px;
+    overflow: visible;
+  }
+
+  .cr-r {
+    padding: 18px;
+    overflow: visible;
+  }
+
+  .cr-l h2 {
+    font-size: 1.25rem;
+  }
+
+  .cr-bs {
+    flex-direction: column-reverse;
+  }
+
+  .cr-bs .s,
+  .cr-bs .p {
+    flex: none;
+  }
+
+  .cr-cod b {
+    font-size: 1.6rem;
+  }
+
+  .cr-toast {
+    bottom: 88px;
+  }
+}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<!-- Página del chat de XpressMS (/chat): aquí vive la conversación con Juno. A ella se llega desde la tarjeta de ingreso (/). -->
+<!-- Los estilos están en static/css y los scripts en static/js: esta página solo arma la estructura. -->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <!-- Hace que la página se vea bien en celulares -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XpressMS by H&amp;Devs</title>
+  <!-- Si el chat va dentro de la burbuja de Juno (página principal), se marca para ocultar su cabecera (ver chat.css). -->
+  <script>if (window.self !== window.top) document.documentElement.classList.add('incrustado');</script>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/chat.css">
+  <link rel="stylesheet" href="/static/css/componentes.css">
+  <link rel="stylesheet" href="/static/css/carnet.css">
+  <link rel="stylesheet" href="/static/css/servicio.css">
+  <link rel="stylesheet" href="/static/css/orden.css">
+  <link rel="stylesheet" href="/static/css/temas.css">
+  <!-- Pone el color del chat según el camino de entrada, antes de dibujar (así no parpadea). -->
+  <script src="/static/js/tema.js"></script>
+</head>
+<body>
+  <main class="chat">
+    <header class="chat-cabecera">
+      <div>
+        <h1>XpressMS</h1>
+        <p>by H&amp;Devs · Hardware and Development</p>
+      </div>
+      <!-- Cierra esta conversación en el navegador y vuelve a la página principal, donde se elige cómo entrar de nuevo. -->
+      <button id="nueva-conversacion" class="boton-cabecera" type="button">Nueva conversación</button>
+    </header>
+
+    <!-- Aquí los scripts van agregando burbujas, tarjetas y botones. "aria-live" avisa a los lectores de pantalla. -->
+    <div id="mensajes" aria-live="polite"></div>
+
+    <!-- Formulario para escribir. "autocomplete=off" evita sugerencias del navegador. -->
+    <form id="formulario" class="chat-formulario" autocomplete="off">
+      <input id="texto" type="text" placeholder="Escribe tu mensaje..." required>
+      <button type="submit">Enviar</button>
+    </form>
+  </main>
+
+  <!-- type="module" permite que los scripts se importen entre sí (import / export). -->
+  <script type="module" src="/static/js/chat.js"></script>
+</body>
+</html>

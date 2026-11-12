@@ -8,6 +8,7 @@
 
 use sqlx::PgPool;
 
+use super::flujo_citas;
 use super::modelo::{Componente, Datos};
 use super::motor::{detectar_intencion, elegir_opcion, es_negativo, normalizar, Intencion};
 use super::pasos::{ELEGIR_EQUIPO, ELEGIR_SERVICIO, LIBRE};
@@ -25,6 +26,11 @@ const OPCIONES_DETALLE: [&str; 2] = ["Agendar una cita", "Ver otros servicios"];
 
 // Entrada del flujo: la persona pidió ver los servicios. Los botones salen de la tabla Servicios.
 pub async fn mostrar_lista(pool: &PgPool) -> Result<Paso, sqlx::Error> {
+    mostrar_lista_con_texto(pool, "Estos son nuestros servicios. ¿Cuál necesitas?").await
+}
+
+// Lo mismo con otro mensaje de entrada (por ejemplo, cuando la lista se pide para agendar una cita).
+pub async fn mostrar_lista_con_texto(pool: &PgPool, mensaje: &str) -> Result<Paso, sqlx::Error> {
     let servicios = repositorio::listar_servicios(pool).await?;
     if servicios.is_empty() {
         return Ok((
@@ -33,10 +39,7 @@ pub async fn mostrar_lista(pool: &PgPool) -> Result<Paso, sqlx::Error> {
         ));
     }
     Ok((
-        r(
-            "Estos son nuestros servicios. ¿Cuál necesitas?",
-            &botones_de_servicios(&servicios),
-        ),
+        r(mensaje, &botones_de_servicios(&servicios)),
         ELEGIR_SERVICIO,
     ))
 }
@@ -54,7 +57,7 @@ pub async fn paso_elegir_servicio(
     match elegir_opcion(&nombres, texto) {
         Some(posicion) => presentar_servicio(pool, datos, &servicios[posicion]).await,
         // No coincide con ningún servicio: ¿quiere salir? Si no, le mostramos la lista otra vez.
-        None if quiere_salir(texto) => Ok(salir()),
+        None if quiere_salir(texto) => Ok(salir(datos)),
         None => Ok((
             r(
                 "No encontré ese servicio. Elige uno de la lista:",
@@ -66,7 +69,7 @@ pub async fn paso_elegir_servicio(
 }
 
 // Con el servicio elegido: si sirve para varios equipos, pregunta cuál; si no, muestra el detalle directamente.
-async fn presentar_servicio(
+pub async fn presentar_servicio(
     pool: &PgPool,
     datos: &mut Datos,
     servicio: &Servicio,
@@ -86,6 +89,10 @@ async fn presentar_servicio(
     // Un solo equipo (o ninguno asignado): no hace falta preguntar.
     let equipo = equipos.first();
     datos.equipo_elegido = equipo.map(|e| e.codigo.clone());
+    // Quien viene de /servicios ya decidió pedir este servicio: sigue la cita en lugar de mostrar la tarjeta.
+    if datos.solicitud.is_some() {
+        return Ok(flujo_citas::pedir_problema(datos, &servicio.nombre));
+    }
     Ok((detalle(servicio, equipo), LIBRE))
 }
 
@@ -115,9 +122,12 @@ pub async fn paso_elegir_equipo(
     match elegir_opcion(&nombres, texto) {
         Some(posicion) => {
             datos.equipo_elegido = Some(equipos[posicion].codigo.clone());
+            if datos.solicitud.is_some() {
+                return Ok(flujo_citas::pedir_problema(datos, &servicio.nombre));
+            }
             Ok((detalle(&servicio, Some(&equipos[posicion])), LIBRE))
         }
-        None if quiere_salir(texto) => Ok(salir()),
+        None if quiere_salir(texto) => Ok(salir(datos)),
         None => Ok((
             r(
                 "Elige uno de los equipos de la lista:",
@@ -131,12 +141,15 @@ pub async fn paso_elegir_equipo(
 // ---------- Piezas de apoyo ----------
 
 // La tarjeta con el detalle del servicio. El precio es solo una base: el costo final se confirma al revisar el equipo.
-fn detalle(servicio: &Servicio, equipo: Option<&TipoEquipo>) -> Respuesta {
+pub(super) fn detalle(servicio: &Servicio, equipo: Option<&TipoEquipo>) -> Respuesta {
     let precio = formato::precio_base(servicio.precio_base.as_deref());
-    let nota = if servicio.precio_base.is_some() {
+    // Sin precio, siempre se explica cómo se cotiza. Con precio, el aviso «puede cambiar» solo sale si el Administrador lo activó.
+    let nota = if servicio.precio_base.is_none() {
+        "Te damos el precio después de revisar tu equipo."
+    } else if servicio.aviso_precio {
         "El costo final se confirma después de revisar tu equipo, según su estado."
     } else {
-        "Te damos el precio después de revisar tu equipo."
+        ""
     };
 
     let mensaje = format!(
@@ -182,6 +195,7 @@ fn quiere_salir(texto: &str) -> bool {
         )
 }
 
-fn salir() -> Paso {
+fn salir(datos: &mut Datos) -> Paso {
+    datos.solicitud = None; // si venía de /servicios, esa solicitud también se deja
     (r("Sin problema. ¿En qué te puedo ayudar?", &MENU), LIBRE)
 }

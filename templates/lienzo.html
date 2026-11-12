@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<!-- El lienzo de Juno (/ y /chat): la pantalla principal de XpressMS.
+     Es UNA sola pantalla con dos estados (el atributo data-vista de <body>):
+       - "bienvenida": Juno al centro, «Hola, soy Juno», la caja para escribir y cuatro píldoras de acción rápida.
+       - "conversacion": en cuanto la persona escribe o elige algo, aparece la conversación y la caja baja al pie.
+     Arriba: el botón ☰ (abre el menú lateral), el logo y, a la derecha, «Iniciar sesión» (visitante) o el avatar (cliente).
+     La interfaz solo muestra: todo lo que tiene consecuencias (registrar, agendar, apartar...) lo hace Juno en la conversación.
+     Los estilos están en static/css/lienzo.css; los scripts, en static/js/chat.js (director) y static/js/menu.js (menú lateral). -->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XpressMS by H&amp;Devs</title>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/chat.css">
+  <link rel="stylesheet" href="/static/css/componentes.css">
+  <link rel="stylesheet" href="/static/css/carnet.css">
+  <link rel="stylesheet" href="/static/css/servicio.css">
+  <link rel="stylesheet" href="/static/css/orden.css">
+  <link rel="stylesheet" href="/static/css/lienzo.css">
+</head>
+<body class="lz" data-vista="bienvenida" data-sesion="visitante">
+
+  <!--ENCABEZADO_MENU-->
+
+  <!-- ===== Lienzo ===== -->
+  <main class="lz-lienzo">
+    <!-- Estado «bienvenida»: Juno al centro. -->
+    <section class="lz-hero" id="hero">
+      <div class="lz-juno"><img src="/static/img/juno.png" alt="Juno"></div>
+      <h1 id="titulo">Hola, soy Juno</h1>
+      <p>Cuéntame qué necesitas y yo me encargo: comprar, reparar, agendar o consultar el estado de tu equipo.</p>
+    </section>
+
+    <!-- Estado «conversación»: aquí los scripts van agregando burbujas, tarjetas y botones. "aria-live" avisa a los lectores de pantalla. -->
+    <div id="mensajes" aria-live="polite"></div>
+
+    <!-- La caja para escribir es la misma en los dos estados: en la bienvenida es grande y está al centro; en la conversación baja al pie. -->
+    <form id="formulario" class="lz-caja" autocomplete="off">
+      <input id="texto" type="text" placeholder="Escribe lo que necesitas…" aria-label="Escribe lo que necesitas" maxlength="1000" required>
+      <button type="submit" aria-label="Enviar">
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </form>
+
+    <div class="lz-pildoras" id="pildoras">
+      <button type="button" data-mensaje="Ver productos">
+        <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg>Ver productos
+      </button>
+      <button type="button" data-mensaje="Quiero reparar mi equipo">
+        <svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.5 2.5-2.5-.5-.5-2.5z"/></svg>Reparar mi equipo
+      </button>
+      <button type="button" data-mensaje="Quiero agendar una cita">
+        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>Agendar una cita
+      </button>
+      <button type="button" data-mensaje="Quiero consultar el estado de mi equipo">
+        <svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Consultar mi equipo
+      </button>
+    </div>
+
+    <p class="lz-pie">XpressMS by H&amp;Devs · <a href="/ingresar">Portal del equipo</a></p>
+  </main>
+
+  <!-- type="module" permite que los scripts se importen entre sí (import / export). -->
+  <script type="module" src="/static/js/chat.js"></script>
+</body>
+</html>
